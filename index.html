@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Calculator - BOWC</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Payroll Calculator</h1>
+            <p class="subtitle">Window Cleaning Company Payroll Processing Tool</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Configuration Section -->
+            <section class="config-section">
+                <h2>Configuration</h2>
+                
+                <div class="config-group">
+                    <h3>Employees</h3>
+                    <div class="employee-inputs">
+                        <div class="input-row">
+                            <input type="text" id="emp-name" placeholder="Employee Name">
+                            <select id="emp-level">
+                                <option value="L1">L1 (Trainee)</option>
+                                <option value="L2">L2</option>
+                                <option value="L3">L3</option>
+                                <option value="L4">L4</option>
+                            </select>
+                            <button onclick="addEmployee()">Add</button>
+                        </div>
+                        <div id="employees-list" class="list-display"></div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Level Percentages</h3>
+                    <div class="level-inputs">
+                        <div class="input-row">
+                            <label>L1 (Trainee):</label>
+                            <input type="number" id="level-L1" value="0.20" step="0.01" min="0" max="1">
+                            <label>Wage per hour:</label>
+                            <input type="number" id="trainee-wage" value="20" step="0.01" min="0">
+                        </div>
+                        <div class="input-row">
+                            <label>L2:</label>
+                            <input type="number" id="level-L2" value="0.25" step="0.01" min="0" max="1">
+                        </div>
+                        <div class="input-row">
+                            <label>L3:</label>
+                            <input type="number" id="level-L3" value="0.27" step="0.01" min="0" max="1">
+                        </div>
+                        <div class="input-row">
+                            <label>L4:</label>
+                            <input type="number" id="level-L4" value="0.30" step="0.01" min="0" max="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Settings</h3>
+                    <div class="input-row">
+                        <label>Margin of Error (minutes):</label>
+                        <input type="number" id="margin-error" value="0.25" step="0.01" min="0">
+                    </div>
+                    <div class="input-row">
+                        <label>Decimal Points:</label>
+                        <input type="number" id="decimal-points" value="2" step="1" min="0" max="10">
+                    </div>
+                </div>
+
+                <div class="config-group">
+                    <h3>Business Expenses <span class="required-indicator">*</span></h3>
+                    <p class="help-text">Required: Enter marketing and insurance spend before processing payroll</p>
+                    <div class="input-row">
+                        <label>Marketing Spend: <span class="required-indicator">*</span></label>
+                        <input type="number" id="marketing-spend" value="" step="0.01" min="0" placeholder="0.00" required>
+                    </div>
+                    <div class="input-row">
+                        <label>Insurance Spend: <span class="required-indicator">*</span></label>
+                        <input type="number" id="insurance-spend" value="" step="0.01" min="0" placeholder="0.00" required>
+                    </div>
+                </div>
+            </section>
+
+            <!-- File Upload Section -->
+            <section class="upload-section">
+                <h2>Upload Payroll Data</h2>
+                <div class="upload-area">
+                    <input type="file" id="csv-file" accept=".csv,.xls,.xlsx" onchange="handleFileSelect(event)">
+                    <label for="csv-file" class="upload-label">
+                        <span class="upload-icon">📁</span>
+                        <span>Choose CSV or Excel file (.csv, .xls, .xlsx) or drag and drop</span>
+                    </label>
+                    <div id="file-info" class="file-info"></div>
+                </div>
+                <div id="status" class="status"></div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="results-section" style="display: none;">
+                <h2>Results</h2>
+                <div class="results-controls">
+                    <button onclick="downloadResults()" class="btn-download">Download CSV</button>
+                    <button onclick="clearResults()" class="btn-clear">Clear Results</button>
+                </div>
+                <div class="table-container">
+                    <table id="results-table">
+                        <thead id="results-header"></thead>
+                        <tbody id="results-body"></tbody>
+                    </table>
+                </div>
+                <!-- Employee Summary will be inserted here by JavaScript -->
+            </section>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,19 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.log
+*.tmp
+
+# Sample/test files
+sample_payroll_data.csv
+henry_rios_calculation.js
+payroll-calculator.zip
+
