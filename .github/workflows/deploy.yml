@@ -29,5 +29,5 @@ jobs:
           CAPROVER_APP_NAME: ${{ secrets.CAPROVER_APP_NAME }}
         run: |
           caprover login -s $CAPROVER_SERVER -p $CAPROVER_PASSWORD
-          caprover deploy -a $CAPROVER_APP_NAME
+          caprover deploy -a $CAPROVER_APP_NAME -t ./captain-definition
 
