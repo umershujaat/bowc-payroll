@@ -28,6 +28,8 @@ jobs:
           CAPROVER_PASSWORD: ${{ secrets.CAPROVER_PASSWORD }}
           CAPROVER_APP_NAME: ${{ secrets.CAPROVER_APP_NAME }}
         run: |
+          echo "Logging into CapRover..."
           caprover login -s $CAPROVER_SERVER -p $CAPROVER_PASSWORD
+          echo "Deploying app: $CAPROVER_APP_NAME"
           caprover deploy -a $CAPROVER_APP_NAME
 
