@@ -8,8 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Payroll Calculator - BOWC</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- PapaParse and XLSX are now handled by the backend -->
 </head>
 <body>
     <div class="container">
@@ -109,6 +108,7 @@
                 <h2>Results</h2>
                 <div class="results-controls">
                     <button onclick="downloadResults()" class="btn-download">Download CSV</button>
+                    <button id="save-payroll-btn" onclick="savePayroll()" class="btn-save" style="background: #007bff; color: white; padding: 14px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 16px; min-height: 48px;">Save to Database</button>
                     <button onclick="clearResults()" class="btn-clear">Clear Results</button>
                 </div>
                 <div class="table-container">

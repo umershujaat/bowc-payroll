@@ -1,15 +1,25 @@
-# Simple static file server for CapRover
-FROM nginx:alpine
+# Node.js application for CapRover
+FROM node:18-alpine
 
-# Copy all files to nginx html directory
-COPY index.html /usr/share/nginx/html/
-COPY app.js /usr/share/nginx/html/
-COPY styles.css /usr/share/nginx/html/
-COPY README.md /usr/share/nginx/html/
+# Set working directory
+WORKDIR /usr/src/app
 
-# Expose port 80
-EXPOSE 80
+# Copy package files
+COPY package.json ./
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Install dependencies
+RUN npm install --production
 
+# Copy application files
+COPY server.js ./
+COPY config/ ./config/
+COPY routes/ ./routes/
+COPY controllers/ ./controllers/
+COPY utils/ ./utils/
+COPY public/ ./public/
+
+# Expose port
+EXPOSE 3000
+
+# Start server
+CMD ["node", "server.js"]

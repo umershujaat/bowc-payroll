@@ -14,6 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -22,14 +27,39 @@ jobs:
       - name: Install CapRover CLI
         run: npm install -g caprover
       
-      - name: Deploy to CapRover
+      - name: Deploy to CapRover via SSH
         env:
           CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
-          CAPROVER_PASSWORD: ${{ secrets.CAPROVER_PASSWORD }}
           CAPROVER_APP_NAME: ${{ secrets.CAPROVER_APP_NAME }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER || 'root' }}
         run: |
-          echo "Logging into CapRover..."
-          caprover login -s $CAPROVER_SERVER -p $CAPROVER_PASSWORD
-          echo "Deploying app: $CAPROVER_APP_NAME"
-          caprover deploy -a $CAPROVER_APP_NAME
+          # Extract host from CAPROVER_SERVER if SSH_HOST not set
+          if [ -z "$SSH_HOST" ]; then
+            SSH_HOST=$(echo $CAPROVER_SERVER | sed 's|https\?://||' | sed 's|/.*||')
+          fi
+          
+          echo "Deploying via SSH to $SSH_USER@$SSH_HOST"
+          echo "App name: $CAPROVER_APP_NAME"
+          
+          # Create deployment package
+          tar -czf deploy.tar.gz index.html app.js styles.css Dockerfile captain-definition
+          
+          # Copy files to server and deploy
+          scp -o StrictHostKeyChecking=no deploy.tar.gz $SSH_USER@$SSH_HOST:/tmp/
+          
+          # SSH into server and deploy
+          ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << EOF
+            cd /tmp
+            mkdir -p payroll-deploy
+            cd payroll-deploy
+            tar -xzf ../deploy.tar.gz
+            docker build -t $CAPROVER_APP_NAME:latest .
+            # Tag and push to CapRover's registry or use CapRover CLI
+            caprover deploy -a $CAPROVER_APP_NAME --tarFile captain-definition || {
+              echo "CapRover CLI not available, using Docker directly..."
+              # Alternative: Use docker to deploy to CapRover
+              docker tag $CAPROVER_APP_NAME:latest caprover/$CAPROVER_APP_NAME:latest
+            }
+EOF
 

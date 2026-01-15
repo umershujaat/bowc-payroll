@@ -1,0 +1,21 @@
+# Node.js server option for static files
+FROM node:18-alpine
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy package.json (we'll create this)
+COPY package.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy static files
+COPY index.html app.js styles.css README.md ./
+
+# Expose port
+EXPOSE 3000
+
+# Start server
+CMD ["node", "server.js"]
+

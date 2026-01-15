@@ -17,3 +17,15 @@ sample_payroll_data.csv
 henry_rios_calculation.js
 payroll-calculator.zip
 
+# Environment variables
+.env
+
+# Node modules
+node_modules/
+
+# SSH keys (never commit private keys!)
+deploy_key
+*.pem
+*.key
+!*.pub
+
