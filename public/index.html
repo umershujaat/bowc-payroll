@@ -26,12 +26,19 @@
                 <div class="config-group">
                     <div class="config-header">
                         <h3>Employees</h3>
-                        <button class="btn-primary" onclick="openEmployeeModal()">
-                            <span>+</span> Add Employee
-                        </button>
+                        <div class="header-actions">
+                            <button class="btn-secondary" onclick="toggleEmployeesSection()">
+                                <span id="employees-toggle-icon">▼</span> Show Employees
+                            </button>
+                            <button class="btn-primary" onclick="openEmployeeModal()">
+                                <span>+</span> Add Employee
+                            </button>
+                        </div>
                     </div>
-                    <div id="employees-list" class="employees-table-container">
-                        <p class="empty-state">Loading employees...</p>
+                    <div id="employees-section" class="employees-section-collapsible" style="display: none;">
+                        <div id="employees-list" class="employees-table-container">
+                            <p class="empty-state">Loading employees...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -40,7 +47,7 @@
                     <div class="config-header">
                         <h3>Level Percentages</h3>
                         <button class="btn-secondary" onclick="toggleLevelConfig()">
-                            <span id="level-toggle-icon">▼</span> Configure
+                            <span id="level-toggle-icon">▼</span> Show Levels
                         </button>
                     </div>
                     <div id="level-config" class="level-config-collapsible" style="display: none;">

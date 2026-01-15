@@ -140,11 +140,11 @@ function updateEmployeesList() {
                         <td><strong>${emp.name}</strong></td>
                         <td><span class="level-badge level-${emp.level.toLowerCase()}">${emp.level}</span></td>
                         <td class="actions-cell">
-                            <button class="btn-icon btn-edit" onclick="editEmployee(${emp.id})" title="Edit">
-                                ✏️
+                            <button class="btn-action btn-edit" onclick="editEmployee(${emp.id})" title="Edit Employee">
+                                <span class="btn-text">Edit</span>
                             </button>
-                            <button class="btn-icon btn-delete" onclick="removeEmployee(${emp.id})" title="Delete">
-                                🗑️
+                            <button class="btn-action btn-delete" onclick="removeEmployee(${emp.id})" title="Delete Employee">
+                                <span class="btn-text">Delete</span>
                             </button>
                         </td>
                     </tr>
@@ -222,6 +222,19 @@ async function saveEmployeeFromModal() {
 
 function editEmployee(id) {
     openEmployeeModal(id);
+}
+
+function toggleEmployeesSection() {
+    const sectionDiv = document.getElementById('employees-section');
+    const icon = document.getElementById('employees-toggle-icon');
+    
+    if (sectionDiv.style.display === 'none') {
+        sectionDiv.style.display = 'block';
+        icon.textContent = '▲';
+    } else {
+        sectionDiv.style.display = 'none';
+        icon.textContent = '▼';
+    }
 }
 
 function toggleLevelConfig() {
