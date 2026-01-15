@@ -100,28 +100,7 @@ async function saveConfig() {
     }
 }
 
-// Employee management
-async function addEmployee() {
-    const nameInput = document.getElementById('emp-name');
-    const levelInput = document.getElementById('emp-level');
-    
-    const name = nameInput.value.trim();
-    const level = levelInput.value;
-    
-    if (!name) {
-        alert('Please enter an employee name');
-        return;
-    }
-    
-    try {
-        await apiCall('/employees', 'POST', { name, level });
-        nameInput.value = '';
-        await loadEmployees();
-        setStatus(SUCCESS_STATUS, 'Employee added successfully');
-    } catch (error) {
-        alert(`Failed to add employee: ${error.message}`);
-    }
-}
+// Employee management - removed old addEmployee, now using modal
 
 async function removeEmployee(id) {
     if (!confirm('Are you sure you want to remove this employee?')) {
@@ -142,16 +121,120 @@ function updateEmployeesList() {
     if (!listEl) return;
     
     if (employees.length === 0) {
-        listEl.innerHTML = '<p style="color: #999; font-style: italic;">No employees added yet</p>';
+        listEl.innerHTML = '<p class="empty-state">No employees added yet. Click "Add Employee" to get started.</p>';
         return;
     }
     
-    listEl.innerHTML = employees.map((emp) => `
-        <div class="list-item">
-            <span><strong>${emp.name}</strong> - ${emp.level}</span>
-            <button onclick="removeEmployee(${emp.id})">Remove</button>
-        </div>
-    `).join('');
+    listEl.innerHTML = `
+        <table class="employees-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Level</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${employees.map((emp) => `
+                    <tr>
+                        <td><strong>${emp.name}</strong></td>
+                        <td><span class="level-badge level-${emp.level.toLowerCase()}">${emp.level}</span></td>
+                        <td class="actions-cell">
+                            <button class="btn-icon btn-edit" onclick="editEmployee(${emp.id})" title="Edit">
+                                ✏️
+                            </button>
+                            <button class="btn-icon btn-delete" onclick="removeEmployee(${emp.id})" title="Delete">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// Modal functions
+let editingEmployeeId = null;
+
+function openEmployeeModal(employeeId = null) {
+    const modal = document.getElementById('employee-modal');
+    const title = document.getElementById('modal-title');
+    const nameInput = document.getElementById('modal-emp-name');
+    const levelInput = document.getElementById('modal-emp-level');
+    
+    editingEmployeeId = employeeId;
+    
+    if (employeeId) {
+        // Edit mode
+        const emp = employees.find(e => e.id === employeeId);
+        if (emp) {
+            title.textContent = 'Edit Employee';
+            nameInput.value = emp.name;
+            levelInput.value = emp.level;
+        }
+    } else {
+        // Add mode
+        title.textContent = 'Add Employee';
+        nameInput.value = '';
+        levelInput.value = 'L1';
+    }
+    
+    modal.style.display = 'flex';
+    nameInput.focus();
+}
+
+function closeEmployeeModal() {
+    const modal = document.getElementById('employee-modal');
+    modal.style.display = 'none';
+    editingEmployeeId = null;
+}
+
+async function saveEmployeeFromModal() {
+    const nameInput = document.getElementById('modal-emp-name');
+    const levelInput = document.getElementById('modal-emp-level');
+    
+    const name = nameInput.value.trim();
+    const level = levelInput.value;
+    
+    if (!name) {
+        alert('Please enter an employee name');
+        return;
+    }
+    
+    try {
+        if (editingEmployeeId) {
+            // Update existing
+            await apiCall(`/employees/${editingEmployeeId}`, 'PUT', { name, level });
+            setStatus(SUCCESS_STATUS, 'Employee updated successfully');
+        } else {
+            // Add new
+            await apiCall('/employees', 'POST', { name, level });
+            setStatus(SUCCESS_STATUS, 'Employee added successfully');
+        }
+        
+        closeEmployeeModal();
+        await loadEmployees();
+    } catch (error) {
+        alert(`Failed to save employee: ${error.message}`);
+    }
+}
+
+function editEmployee(id) {
+    openEmployeeModal(id);
+}
+
+function toggleLevelConfig() {
+    const configDiv = document.getElementById('level-config');
+    const icon = document.getElementById('level-toggle-icon');
+    
+    if (configDiv.style.display === 'none') {
+        configDiv.style.display = 'block';
+        icon.textContent = '▲';
+    } else {
+        configDiv.style.display = 'none';
+        icon.textContent = '▼';
+    }
 }
 
 // File handling
@@ -587,12 +670,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadEmployees();
     await loadConfig();
     
-    // Allow Enter key to add employee
-    const empNameInput = document.getElementById('emp-name');
-    if (empNameInput) {
-        empNameInput.addEventListener('keypress', function(e) {
+    // Allow Enter key in modal
+    const modalNameInput = document.getElementById('modal-emp-name');
+    if (modalNameInput) {
+        modalNameInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                addEmployee();
+                saveEmployeeFromModal();
+            }
+        });
+    }
+    
+    // Close modal on outside click
+    const modal = document.getElementById('employee-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeEmployeeModal();
             }
         });
     }
