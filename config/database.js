@@ -15,7 +15,7 @@ const pool = mysql.createPool({
     keepAliveInitialDelay: 0
 });
 
-// Test connection
+// Test connection (non-blocking - app will start even if DB is not ready)
 pool.getConnection()
     .then(connection => {
         console.log('✅ MySQL database connected');
@@ -23,6 +23,8 @@ pool.getConnection()
     })
     .catch(err => {
         console.error('❌ MySQL connection error:', err.message);
+        console.error('⚠️  App will continue to start, but database operations will fail until connection is established');
+        console.error('💡 Check your DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, and DB_PORT environment variables');
     });
 
 module.exports = pool;
