@@ -82,15 +82,14 @@ router.post('/process', upload.single('file'), async (req, res) => {
             req.file.buffer,
             req.file.originalname,
             employees,
-            levels,
+            levelsObj,
             {
                 trainee_wage: traineeWage,
                 margin_error: config.margin_error || '0.25',
                 decimal_points: config.decimal_points || '2',
                 marketing_spend: req.body.marketing_spend || '0',
                 insurance_spend: req.body.insurance_spend || '0'
-            },
-            levelsObj
+            }
         );
         
         res.json(result);
