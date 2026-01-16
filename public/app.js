@@ -24,7 +24,8 @@ let businessSummary = {
     totalRevenue: 0,
     totalPayroll: 0,
     marketingSpend: 0,
-    insuranceSpend: 0
+    insuranceSpend: 0,
+    payrollTaxes: 0
 };
 
 // Status management
@@ -921,7 +922,7 @@ function displayBusinessSummary() {
     summaryDiv.id = 'business-summary';
     summaryDiv.className = 'business-summary';
     
-    const totalExpenses = businessSummary.totalPayroll + businessSummary.marketingSpend + businessSummary.insuranceSpend;
+    const totalExpenses = businessSummary.totalPayroll + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.payrollTaxes || 0);
     const netProfit = businessSummary.totalRevenue - totalExpenses;
     const profitMargin = businessSummary.totalRevenue > 0 
         ? ((netProfit / businessSummary.totalRevenue) * 100).toFixed(2)
@@ -945,6 +946,10 @@ function displayBusinessSummary() {
                     <tr>
                         <td><strong>Total Payroll Cost</strong></td>
                         <td class="expense-amount">$${businessSummary.totalPayroll.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Payroll Taxes (7.65%)</strong></td>
+                        <td class="expense-amount">$${(businessSummary.payrollTaxes || 0).toFixed(2)}</td>
                     </tr>
                     <tr>
                         <td><strong>Marketing Spend</strong></td>

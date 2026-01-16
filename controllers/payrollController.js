@@ -79,7 +79,8 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
         totalRevenue: 0,
         totalPayroll: 0,
         marketingSpend: parseFloat(marketingSpend) || 0,
-        insuranceSpend: parseFloat(insuranceSpend) || 0
+        insuranceSpend: parseFloat(insuranceSpend) || 0,
+        payrollTaxes: 0
     };
     
     // Use raw hours for totals
