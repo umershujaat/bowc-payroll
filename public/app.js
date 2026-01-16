@@ -1227,8 +1227,9 @@ function downloadResults() {
     csvData.push(['Office Staff Avg Salary', `$${(businessSummary.officeStaffSpend || 0).toFixed(2)}`]);
     csvData.push(['Vehicle Gas Expense', `$${(businessSummary.vehicleGasSpend || 0).toFixed(2)}`]);
     csvData.push(['Cost of Supplies', `$${(businessSummary.suppliesSpend || 0).toFixed(2)}`]);
+    csvData.push(['Adjustment Expense', `$${(businessSummary.adjustmentExpense || 0).toFixed(2)}`]);
     csvData.push(['Stripe Cost (1.5%)', `$${(businessSummary.stripeCost || 0).toFixed(2)}`]);
-    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.technologySpend || 0) + (businessSummary.officeStaffSpend || 0) + (businessSummary.vehicleGasSpend || 0) + (businessSummary.suppliesSpend || 0) + (businessSummary.stripeCost || 0);
+    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.technologySpend || 0) + (businessSummary.officeStaffSpend || 0) + (businessSummary.vehicleGasSpend || 0) + (businessSummary.suppliesSpend || 0) + (businessSummary.adjustmentExpense || 0) + (businessSummary.stripeCost || 0);
     csvData.push(['Total Expenses', `$${totalExpenses.toFixed(2)}`]);
     const netProfit = businessSummary.totalRevenue - totalExpenses;
     csvData.push(['Net Profit', `$${netProfit.toFixed(2)}`]);
