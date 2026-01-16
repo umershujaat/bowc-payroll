@@ -25,6 +25,8 @@ let businessSummary = {
     totalPayroll: 0,
     marketingSpend: 0,
     insuranceSpend: 0,
+    technologySpend: 0,
+    officeStaffSpend: 0,
     payrollTaxes: 0
 };
 
@@ -976,6 +978,14 @@ function displayBusinessSummary() {
                         <td class="expense-amount">$${businessSummary.insuranceSpend.toFixed(2)}</td>
                     </tr>
                     <tr>
+                        <td><strong>Technology Expense</strong></td>
+                        <td class="expense-amount">$${(businessSummary.technologySpend || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Office Staff Avg Salary</strong></td>
+                        <td class="expense-amount">$${(businessSummary.officeStaffSpend || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
                         <td><strong>Total Expenses</strong></td>
                         <td class="expense-total">$${totalExpenses.toFixed(2)}</td>
                     </tr>
@@ -1143,7 +1153,9 @@ function downloadResults() {
     csvData.push(['Payroll Taxes (7.65%)', `$${(businessSummary.payrollTaxes || 0).toFixed(2)}`]);
     csvData.push(['Marketing Spend', `$${businessSummary.marketingSpend.toFixed(2)}`]);
     csvData.push(['Insurance Spend', `$${businessSummary.insuranceSpend.toFixed(2)}`]);
-    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend;
+    csvData.push(['Technology Expense', `$${(businessSummary.technologySpend || 0).toFixed(2)}`]);
+    csvData.push(['Office Staff Avg Salary', `$${(businessSummary.officeStaffSpend || 0).toFixed(2)}`]);
+    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.technologySpend || 0) + (businessSummary.officeStaffSpend || 0);
     csvData.push(['Total Expenses', `$${totalExpenses.toFixed(2)}`]);
     const netProfit = businessSummary.totalRevenue - totalExpenses;
     csvData.push(['Net Profit', `$${netProfit.toFixed(2)}`]);
