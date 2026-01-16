@@ -78,3 +78,15 @@ INSERT INTO configurations (config_key, config_value) VALUES
     ('decimal_points', '2')
 ON DUPLICATE KEY UPDATE config_value = VALUES(config_value);
 
+-- Insert default employees
+INSERT INTO employees (name, level) VALUES
+    ('Henry Rios', 'L4'),
+    ('Danny Brown', 'L4'),
+    ('Kevin Cooper', 'L4'),
+    ('Yong Lee', 'L4'),
+    ('David Mestas', 'L3'),
+    ('Rick Fox', 'L3'),
+    ('Paul Pate', 'L3'),
+    ('Joshua Ryan', 'L1')
+ON DUPLICATE KEY UPDATE level = VALUES(level);
+
