@@ -84,7 +84,8 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
         officeStaffSpend: parseFloat(officeStaffSpend) || 0,
         vehicleGasSpend: parseFloat(vehicleGasSpend) || 0,
         suppliesSpend: parseFloat(suppliesSpend) || 0,
-        payrollTaxes: 0
+        payrollTaxes: 0,
+        stripeCost: 0
     };
     
     // Use raw hours for totals

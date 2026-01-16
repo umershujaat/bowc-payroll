@@ -29,7 +29,8 @@ let businessSummary = {
     officeStaffSpend: 0,
     vehicleGasSpend: 0,
     suppliesSpend: 0,
-    payrollTaxes: 0
+    payrollTaxes: 0,
+    stripeCost: 0
 };
 
 // Status management
