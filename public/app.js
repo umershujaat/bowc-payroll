@@ -1021,6 +1021,10 @@ function displayBusinessSummary() {
                         <td class="expense-amount">$${(businessSummary.suppliesSpend || 0).toFixed(2)}</td>
                     </tr>
                     <tr>
+                        <td><strong>Stripe Cost (1.5%)</strong></td>
+                        <td class="expense-amount">$${(businessSummary.stripeCost || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
                         <td><strong>Total Expenses</strong></td>
                         <td class="expense-total">$${totalExpenses.toFixed(2)}</td>
                     </tr>
@@ -1229,7 +1233,8 @@ function clearResults() {
         officeStaffSpend: 0,
         vehicleGasSpend: 0,
         suppliesSpend: 0,
-        payrollTaxes: 0
+        payrollTaxes: 0,
+        stripeCost: 0
     };
     const resultsSection = document.getElementById('results-section');
     if (resultsSection) {

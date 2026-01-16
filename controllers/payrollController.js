@@ -127,6 +127,9 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
     // Calculate payroll taxes (7.65% of total payroll cost)
     businessSummary.payrollTaxes = businessSummary.totalPayroll * 0.0765;
     
+    // Calculate Stripe cost (1.5% of total revenue)
+    businessSummary.stripeCost = businessSummary.totalRevenue * 0.015;
+    
     return { employeeTotals, businessSummary };
 }
 
