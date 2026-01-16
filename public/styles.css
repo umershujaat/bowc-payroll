@@ -395,7 +395,27 @@ section h2 {
 .employees-section-collapsible,
 .levels-section-collapsible {
     margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #ddd;
     animation: slideDown 0.3s ease;
+}
+
+.section-header-with-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.section-header-with-action h3 {
+    color: #555;
+    margin: 0;
+    font-size: 1.3em;
 }
 
 .levels-table-container {

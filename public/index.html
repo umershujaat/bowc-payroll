@@ -42,39 +42,30 @@
                 <h2>Configuration</h2>
                 
                 <!-- Employees Section -->
-                <div class="config-group">
-                    <div class="config-header">
+                <div id="employees-section" class="employees-section-collapsible" style="display: none;">
+                    <div class="section-header-with-action">
                         <h3>Employees</h3>
-                        <div class="header-actions">
-                            <button class="btn-add" onclick="openEmployeeModal()">
-                                <span>+</span> Add Employee
-                            </button>
-                        </div>
+                        <button class="btn-add" onclick="openEmployeeModal()">
+                            <span>+</span> Add Employee
+                        </button>
                     </div>
-                    <div id="employees-section" class="employees-section-collapsible" style="display: none;">
-                        <div id="employees-list" class="employees-table-container">
-                            <p class="empty-state">Loading employees...</p>
-                        </div>
+                    <div id="employees-list" class="employees-table-container">
+                        <p class="empty-state">Loading employees...</p>
                     </div>
                 </div>
 
                 <!-- Level Configuration Section -->
-                <div class="config-group">
-                    <div class="config-header">
+                <div id="levels-section" class="levels-section-collapsible" style="display: none;">
+                    <div class="section-header-with-action">
                         <h3>Level Percentages</h3>
-                        <div class="header-actions">
-                            <button class="btn-add" onclick="openLevelModal()">
-                                <span>+</span> Add Level
-                            </button>
-                        </div>
+                        <button class="btn-add" onclick="openLevelModal()">
+                            <span>+</span> Add Level
+                        </button>
                     </div>
-                    <div id="levels-section" class="levels-section-collapsible" style="display: none;">
-                        <div id="levels-list" class="levels-table-container">
-                            <p class="empty-state">Loading levels...</p>
-                        </div>
+                    <div id="levels-list" class="levels-table-container">
+                        <p class="empty-state">Loading levels...</p>
                     </div>
                 </div>
-
 
                 <div class="config-group">
                     <h3>Business Expenses <span class="required-indicator">*</span></h3>
