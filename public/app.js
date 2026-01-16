@@ -251,9 +251,15 @@ function toggleLevelConfig() {
 }
 
 // File handling
+let selectedFile = null;
+
 function handleFileSelect(event) {
     const file = event.target.files[0];
-    if (!file) return;
+    if (!file) {
+        selectedFile = null;
+        document.getElementById('upload-actions').style.display = 'none';
+        return;
+    }
     
     const fileName = file.name.toLowerCase();
     const isCSV = fileName.endsWith('.csv');
@@ -261,31 +267,110 @@ function handleFileSelect(event) {
     
     if (!isCSV && !isExcel) {
         setStatus(ERROR_STATUS, 'Please upload a CSV or Excel file (.csv, .xls, .xlsx)');
+        showError('Invalid file type. Please select a CSV or Excel file (.csv, .xls, .xlsx)');
+        event.target.value = ''; // Clear the input
+        selectedFile = null;
+        document.getElementById('upload-actions').style.display = 'none';
         return;
     }
     
-    document.getElementById('file-info').textContent = `Selected: ${file.name}`;
-    processPayrollFile(file);
+    selectedFile = file;
+    document.getElementById('file-info').textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+    document.getElementById('upload-actions').style.display = 'block';
+    hideError();
+    setStatus('', '');
+}
+
+function clearUploadedFile() {
+    document.getElementById('csv-file').value = '';
+    document.getElementById('file-info').textContent = '';
+    document.getElementById('upload-actions').style.display = 'none';
+    selectedFile = null;
+    hideError();
+    setStatus('', '');
+}
+
+async function runPayroll() {
+    // Clear previous errors
+    hideError();
+    
+    // Validate employees
+    if (employees.length === 0) {
+        showError('Please add at least one employee before processing payroll.');
+        setStatus(ERROR_STATUS, 'No employees configured');
+        return;
+    }
+    
+    // Validate file
+    if (!selectedFile) {
+        showError('Please select a payroll file first.');
+        setStatus(ERROR_STATUS, 'No file selected');
+        return;
+    }
+    
+    // Validate marketing and insurance spend
+    const marketingSpend = parseFloat(document.getElementById('marketing-spend').value);
+    const insuranceSpend = parseFloat(document.getElementById('insurance-spend').value);
+    
+    if (isNaN(marketingSpend) || marketingSpend < 0) {
+        showError('Please enter a valid Marketing Spend amount (must be 0 or greater).');
+        setStatus(ERROR_STATUS, 'Invalid Marketing Spend');
+        document.getElementById('marketing-spend').focus();
+        return;
+    }
+    
+    if (isNaN(insuranceSpend) || insuranceSpend < 0) {
+        showError('Please enter a valid Insurance Spend amount (must be 0 or greater).');
+        setStatus(ERROR_STATUS, 'Invalid Insurance Spend');
+        document.getElementById('insurance-spend').focus();
+        return;
+    }
+    
+    // Validate file type
+    const fileName = selectedFile.name.toLowerCase();
+    const isCSV = fileName.endsWith('.csv');
+    const isExcel = fileName.endsWith('.xls') || fileName.endsWith('.xlsx');
+    
+    if (!isCSV && !isExcel) {
+        showError('Invalid file type. Please select a CSV or Excel file (.csv, .xls, .xlsx)');
+        setStatus(ERROR_STATUS, 'Invalid file type');
+        return;
+    }
+    
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (selectedFile.size > maxSize) {
+        showError(`File is too large. Maximum file size is 10MB. Your file is ${(selectedFile.size / 1024 / 1024).toFixed(2)}MB.`);
+        setStatus(ERROR_STATUS, 'File too large');
+        return;
+    }
+    
+    // All validations passed, process the file
+    await processPayrollFile(selectedFile);
 }
 
 async function processPayrollFile(file) {
     try {
         setStatus(IN_PROGRESS_STATUS, 'Processing payroll file...');
+        hideError();
         
-        // Validate inputs
-        const marketingSpend = parseFloat(document.getElementById('marketing-spend').value);
-        const insuranceSpend = parseFloat(document.getElementById('insurance-spend').value);
-        
-        if (isNaN(marketingSpend) || marketingSpend < 0) {
-            throw new Error('Please enter a valid Marketing Spend amount (must be 0 or greater)');
-        }
-        
-        if (isNaN(insuranceSpend) || insuranceSpend < 0) {
-            throw new Error('Please enter a valid Insurance Spend amount (must be 0 or greater)');
-        }
+        // Disable the button during processing
+        const runBtn = document.getElementById('run-payroll-btn');
+        const originalText = runBtn.innerHTML;
+        runBtn.disabled = true;
+        runBtn.innerHTML = '<span>⏳</span> Processing...';
         
         // Save config first
-        await saveConfig();
+        try {
+            await saveConfig();
+        } catch (configError) {
+            console.warn('Config save warning:', configError);
+            // Continue even if config save fails
+        }
+        
+        // Get marketing and insurance spend
+        const marketingSpend = parseFloat(document.getElementById('marketing-spend').value);
+        const insuranceSpend = parseFloat(document.getElementById('insurance-spend').value);
         
         // Create form data
         const formData = new FormData();
@@ -300,11 +385,30 @@ async function processPayrollFile(file) {
         });
         
         if (!response.ok) {
-            const error = await response.json().catch(() => ({ error: response.statusText }));
-            throw new Error(error.error || 'Failed to process payroll');
+            let errorMessage = 'Failed to process payroll';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+                errorMessage = `Server error: ${response.status} ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
         }
         
         const data = await response.json();
+        
+        // Validate response data
+        if (!data.results || !Array.isArray(data.results)) {
+            throw new Error('Invalid response from server: Missing results data');
+        }
+        
+        if (!data.employeeTotals || typeof data.employeeTotals !== 'object') {
+            throw new Error('Invalid response from server: Missing employee totals');
+        }
+        
+        if (!data.businessSummary || typeof data.businessSummary !== 'object') {
+            throw new Error('Invalid response from server: Missing business summary');
+        }
         
         // Store results
         results = data.results;
@@ -314,10 +418,50 @@ async function processPayrollFile(file) {
         // Display results
         displayResults(results);
         setStatus(SUCCESS_STATUS, `Successfully processed ${results.length} jobs`);
+        hideError();
+        
+        // Scroll to results
+        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
         
     } catch (error) {
-        setStatus(ERROR_STATUS, `Error: ${error.message}`);
-        console.error(error);
+        console.error('Payroll processing error:', error);
+        const errorMessage = error.message || 'An unexpected error occurred while processing payroll';
+        setStatus(ERROR_STATUS, `Error: ${errorMessage}`);
+        showError(errorMessage);
+        
+        // Show detailed error if available
+        if (error.stack) {
+            console.error('Error stack:', error.stack);
+        }
+    } finally {
+        // Re-enable the button
+        const runBtn = document.getElementById('run-payroll-btn');
+        if (runBtn) {
+            runBtn.disabled = false;
+            runBtn.innerHTML = '<span>▶️</span> Run Payroll';
+        }
+    }
+}
+
+// Error display functions
+function showError(message) {
+    const errorDiv = document.getElementById('error-details');
+    if (errorDiv) {
+        errorDiv.innerHTML = `
+            <div class="error-box">
+                <strong>⚠️ Error Details:</strong>
+                <p>${message}</p>
+            </div>
+        `;
+        errorDiv.style.display = 'block';
+    }
+}
+
+function hideError() {
+    const errorDiv = document.getElementById('error-details');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
     }
 }
 

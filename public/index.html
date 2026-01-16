@@ -145,7 +145,16 @@
                     </label>
                     <div id="file-info" class="file-info"></div>
                 </div>
+                <div id="upload-actions" style="display: none; margin-top: 15px; text-align: center;">
+                    <button id="run-payroll-btn" onclick="runPayroll()" class="btn-run-payroll">
+                        <span>▶️</span> Run Payroll
+                    </button>
+                    <button onclick="clearUploadedFile()" class="btn-secondary" style="margin-left: 10px;">
+                        Clear File
+                    </button>
+                </div>
                 <div id="status" class="status"></div>
+                <div id="error-details" class="error-details" style="display: none;"></div>
             </section>
 
             <!-- Results Section -->
