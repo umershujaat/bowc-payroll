@@ -64,25 +64,73 @@ router.post('/process', upload.single('file'), async (req, res) => {
 // Save processed payroll to database
 router.post('/save', async (req, res) => {
     try {
-        const { results, employeeTotals, businessSummary, runDate } = req.body;
+        const { 
+            results, 
+            employeeTotals, 
+            businessSummary, 
+            runDate,
+            periodName,
+            periodStartDate,
+            periodEndDate,
+            notes
+        } = req.body;
         
         if (!results || !employeeTotals || !businessSummary) {
             return res.status(400).json({ error: 'Missing required data' });
         }
         
+        if (!periodName) {
+            return res.status(400).json({ error: 'Period name is required' });
+        }
+        
+        // Calculate derived fields
+        const runDateValue = runDate || new Date().toISOString().split('T')[0];
+        const startDate = periodStartDate || runDateValue;
+        const endDate = periodEndDate || runDateValue;
+        const year = new Date(startDate).getFullYear();
+        const quarter = Math.floor((new Date(startDate).getMonth() + 3) / 3);
+        
+        // Calculate totals
+        const totalExpenses = businessSummary.totalPayroll + businessSummary.marketingSpend + businessSummary.insuranceSpend;
+        const netProfit = businessSummary.totalRevenue - totalExpenses;
+        const profitMargin = businessSummary.totalRevenue > 0 
+            ? ((netProfit / businessSummary.totalRevenue) * 100).toFixed(2)
+            : 0;
+        
+        // Get next period number for this year
+        const [periodCount] = await db.execute(
+            'SELECT COALESCE(MAX(period_number), 0) + 1 as next_period FROM payroll_runs WHERE year = ?',
+            [year]
+        );
+        const periodNumber = periodCount[0].next_period;
+        
         // Start transaction
         await db.execute('START TRANSACTION');
         
         try {
-            // Insert payroll run
+            // Insert payroll run with period information
             const [runResult] = await db.execute(
-                'INSERT INTO payroll_runs (run_date, marketing_spend, insurance_spend, total_revenue, total_payroll) VALUES (?, ?, ?, ?, ?)',
+                `INSERT INTO payroll_runs 
+                (run_date, period_name, period_start_date, period_end_date, period_number, year, quarter, 
+                 marketing_spend, insurance_spend, total_revenue, total_payroll, total_expenses, 
+                 net_profit, profit_margin, notes) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                    runDate || new Date().toISOString().split('T')[0],
+                    runDateValue,
+                    periodName,
+                    startDate,
+                    endDate,
+                    periodNumber,
+                    year,
+                    quarter,
                     businessSummary.marketingSpend,
                     businessSummary.insuranceSpend,
                     businessSummary.totalRevenue,
-                    businessSummary.totalPayroll
+                    businessSummary.totalPayroll,
+                    totalExpenses,
+                    netProfit,
+                    profitMargin,
+                    notes || null
                 ]
             );
             

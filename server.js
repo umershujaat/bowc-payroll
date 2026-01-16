@@ -19,6 +19,7 @@ app.use('/api/employees', require('./routes/employees'));
 app.use('/api/config', require('./routes/config'));
 app.use('/api/payroll', require('./routes/payroll'));
 app.use('/api/history', require('./routes/history'));
+app.use('/api/analytics', require('./routes/analytics'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

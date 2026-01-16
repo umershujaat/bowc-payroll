@@ -156,6 +156,14 @@
                     <button id="save-payroll-btn" onclick="savePayroll()" class="btn-save" style="background: #007bff; color: white; padding: 14px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 16px; min-height: 48px;">Save to Database</button>
                     <button onclick="clearResults()" class="btn-clear">Clear Results</button>
                 </div>
+                
+                <!-- Payroll History Section -->
+                <div style="margin-top: 30px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="color: #667eea; margin: 0;">Payroll History</h3>
+                        <button onclick="showPayrollHistory()" class="btn-primary">View All History</button>
+                    </div>
+                </div>
                 <div class="table-container">
                     <table id="results-table">
                         <thead id="results-header"></thead>
@@ -192,6 +200,96 @@
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeEmployeeModal()">Cancel</button>
                 <button class="btn-primary" onclick="saveEmployeeFromModal()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Payroll Modal -->
+    <div id="save-payroll-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Save Payroll to Database</h3>
+                <button class="modal-close" onclick="closeSavePayrollModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="save-period-name">Period Name <span class="required-indicator">*</span></label>
+                    <input type="text" id="save-period-name" placeholder="e.g., Bi-weekly Payroll - Jan 1-15, 2026" required>
+                    <small style="color: #666; font-size: 12px;">Give this payroll period a descriptive name</small>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="save-period-start">Period Start Date <span class="required-indicator">*</span></label>
+                        <input type="date" id="save-period-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="save-period-end">Period End Date <span class="required-indicator">*</span></label>
+                        <input type="date" id="save-period-end" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="save-notes">Notes (Optional)</label>
+                    <textarea id="save-notes" rows="3" placeholder="Any additional notes about this payroll period..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeSavePayrollModal()">Cancel</button>
+                <button class="btn-primary" onclick="confirmSavePayroll()">Save Payroll</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payroll History Modal -->
+    <div id="history-modal" class="modal">
+        <div class="modal-content" style="max-width: 90%; width: 1200px;">
+            <div class="modal-header">
+                <h3>Payroll History</h3>
+                <button class="modal-close" onclick="closeHistoryModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Search and Filters -->
+                <div class="history-filters">
+                    <div class="filter-row">
+                        <input type="text" id="history-search" placeholder="Search by period name..." onkeyup="filterHistory()" style="flex: 1; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div class="filter-row">
+                        <select id="history-year" onchange="filterHistory()" style="padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <option value="">All Years</option>
+                        </select>
+                        <select id="history-quarter" onchange="filterHistory()" style="padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                            <option value="">All Quarters</option>
+                            <option value="1">Q1</option>
+                            <option value="2">Q2</option>
+                            <option value="3">Q3</option>
+                            <option value="4">Q4</option>
+                        </select>
+                        <input type="date" id="history-start-date" onchange="filterHistory()" placeholder="Start Date" style="padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <input type="date" id="history-end-date" onchange="filterHistory()" placeholder="End Date" style="padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                        <button onclick="clearHistoryFilters()" class="btn-secondary">Clear Filters</button>
+                    </div>
+                </div>
+                
+                <!-- History Table -->
+                <div id="history-table-container" class="history-table-container">
+                    <p class="empty-state">Loading payroll history...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payroll Detail Modal -->
+    <div id="payroll-detail-modal" class="modal">
+        <div class="modal-content" style="max-width: 95%; width: 1400px;">
+            <div class="modal-header">
+                <h3 id="detail-period-name">Payroll Details</h3>
+                <button class="modal-close" onclick="closePayrollDetailModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="payroll-detail-body">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closePayrollDetailModal()">Close</button>
+                <button class="btn-primary" onclick="exportPayrollDetail()" id="export-detail-btn">Export CSV</button>
             </div>
         </div>
     </div>

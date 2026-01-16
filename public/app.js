@@ -551,16 +551,78 @@ async function savePayroll() {
             return;
         }
         
+        // Open period input modal
+        openSavePayrollModal();
+    } catch (error) {
+        setStatus(ERROR_STATUS, `Failed to save payroll: ${error.message}`);
+    }
+}
+
+// Open save payroll modal with period input
+function openSavePayrollModal() {
+    const modal = document.getElementById('save-payroll-modal');
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Set default dates (bi-weekly period ending today)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 13); // 14-day period
+    
+    document.getElementById('save-period-name').value = '';
+    document.getElementById('save-period-start').value = startDate.toISOString().split('T')[0];
+    document.getElementById('save-period-end').value = endDate.toISOString().split('T')[0];
+    document.getElementById('save-notes').value = '';
+    
+    modal.style.display = 'flex';
+}
+
+function closeSavePayrollModal() {
+    const modal = document.getElementById('save-payroll-modal');
+    modal.style.display = 'none';
+}
+
+async function confirmSavePayroll() {
+    try {
+        const periodName = document.getElementById('save-period-name').value.trim();
+        const periodStart = document.getElementById('save-period-start').value;
+        const periodEnd = document.getElementById('save-period-end').value;
+        const notes = document.getElementById('save-notes').value.trim();
+        
+        if (!periodName) {
+            alert('Please enter a period name (e.g., "Bi-weekly Payroll - Jan 1-15, 2026")');
+            return;
+        }
+        
+        if (!periodStart || !periodEnd) {
+            alert('Please enter both start and end dates');
+            return;
+        }
+        
+        if (new Date(periodStart) > new Date(periodEnd)) {
+            alert('Start date must be before end date');
+            return;
+        }
+        
         setStatus(IN_PROGRESS_STATUS, 'Saving payroll to database...');
+        closeSavePayrollModal();
         
         const response = await apiCall('/payroll/save', 'POST', {
             results,
             employeeTotals,
             businessSummary,
-            runDate: new Date().toISOString().split('T')[0]
+            runDate: new Date().toISOString().split('T')[0],
+            periodName,
+            periodStartDate: periodStart,
+            periodEndDate: periodEnd,
+            notes: notes || null
         });
         
-        setStatus(SUCCESS_STATUS, `Payroll saved successfully! Run ID: ${response.payrollRunId}`);
+        setStatus(SUCCESS_STATUS, `Payroll "${periodName}" saved successfully! Run ID: ${response.payrollRunId}`);
+        
+        // Refresh history if on history page
+        if (typeof loadPayrollHistory === 'function') {
+            loadPayrollHistory();
+        }
     } catch (error) {
         setStatus(ERROR_STATUS, `Failed to save payroll: ${error.message}`);
     }
@@ -677,6 +739,359 @@ function clearResults() {
     setStatus(SUCCESS_STATUS, 'Results cleared');
 }
 
+// Payroll History Functions
+let payrollHistory = [];
+let currentDetailPayrollId = null;
+
+async function showPayrollHistory() {
+    const modal = document.getElementById('history-modal');
+    modal.style.display = 'flex';
+    await loadPayrollHistory();
+}
+
+function closeHistoryModal() {
+    const modal = document.getElementById('history-modal');
+    modal.style.display = 'none';
+}
+
+async function loadPayrollHistory() {
+    try {
+        const search = document.getElementById('history-search')?.value || '';
+        const year = document.getElementById('history-year')?.value || '';
+        const quarter = document.getElementById('history-quarter')?.value || '';
+        const startDate = document.getElementById('history-start-date')?.value || '';
+        const endDate = document.getElementById('history-end-date')?.value || '';
+        
+        let url = '/api/history?';
+        const params = [];
+        if (search) params.push(`search=${encodeURIComponent(search)}`);
+        if (year) params.push(`year=${year}`);
+        if (quarter) params.push(`quarter=${quarter}`);
+        if (startDate) params.push(`startDate=${startDate}`);
+        if (endDate) params.push(`endDate=${endDate}`);
+        
+        url += params.join('&');
+        
+        payrollHistory = await apiCall(url);
+        displayPayrollHistory();
+        
+        // Populate year dropdown
+        populateYearFilter();
+    } catch (error) {
+        console.error('Error loading payroll history:', error);
+        const container = document.getElementById('history-table-container');
+        if (container) {
+            container.innerHTML = `<p class="empty-state">Error loading history: ${error.message}</p>`;
+        }
+    }
+}
+
+function populateYearFilter() {
+    const yearSelect = document.getElementById('history-year');
+    if (!yearSelect) return;
+    
+    const years = new Set();
+    payrollHistory.forEach(p => {
+        if (p.year) years.add(p.year);
+    });
+    
+    const currentYear = new Date().getFullYear();
+    if (!years.has(currentYear)) years.add(currentYear);
+    
+    const sortedYears = Array.from(years).sort((a, b) => b - a);
+    
+    yearSelect.innerHTML = '<option value="">All Years</option>' + 
+        sortedYears.map(y => `<option value="${y}">${y}</option>`).join('');
+}
+
+function displayPayrollHistory() {
+    const container = document.getElementById('history-table-container');
+    if (!container) return;
+    
+    if (payrollHistory.length === 0) {
+        container.innerHTML = '<p class="empty-state">No payroll history found. Process and save a payroll to get started.</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Period Name</th>
+                    <th>Date Range</th>
+                    <th>Jobs</th>
+                    <th>Revenue</th>
+                    <th>Payroll</th>
+                    <th>Expenses</th>
+                    <th>Net Profit</th>
+                    <th>Margin</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${payrollHistory.map(p => {
+                    const startDate = p.period_start_date ? new Date(p.period_start_date).toLocaleDateString() : '-';
+                    const endDate = p.period_end_date ? new Date(p.period_end_date).toLocaleDateString() : '-';
+                    const dateRange = `${startDate} - ${endDate}`;
+                    const profitClass = p.net_profit >= 0 ? 'profit-positive' : 'profit-negative';
+                    return `
+                        <tr>
+                            <td><strong>${p.period_name || 'Unnamed Period'}</strong></td>
+                            <td>${dateRange}</td>
+                            <td>${p.job_count || 0}</td>
+                            <td>$${parseFloat(p.total_revenue || 0).toFixed(2)}</td>
+                            <td>$${parseFloat(p.total_payroll || 0).toFixed(2)}</td>
+                            <td>$${parseFloat(p.total_expenses || 0).toFixed(2)}</td>
+                            <td class="${profitClass}">$${parseFloat(p.net_profit || 0).toFixed(2)}</td>
+                            <td class="${profitClass}">${parseFloat(p.profit_margin || 0).toFixed(2)}%</td>
+                            <td class="actions-cell">
+                                <button class="btn-action btn-view" onclick="viewPayrollDetail(${p.id})" title="View Details">View</button>
+                                <button class="btn-action btn-export" onclick="exportPayrollHistory(${p.id})" title="Export">Export</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function filterHistory() {
+    loadPayrollHistory();
+}
+
+function clearHistoryFilters() {
+    document.getElementById('history-search').value = '';
+    document.getElementById('history-year').value = '';
+    document.getElementById('history-quarter').value = '';
+    document.getElementById('history-start-date').value = '';
+    document.getElementById('history-end-date').value = '';
+    loadPayrollHistory();
+}
+
+async function viewPayrollDetail(id) {
+    try {
+        currentDetailPayrollId = id;
+        const data = await apiCall(`/history/${id}`);
+        displayPayrollDetail(data);
+    } catch (error) {
+        alert(`Failed to load payroll details: ${error.message}`);
+    }
+}
+
+function displayPayrollDetail(data) {
+    const modal = document.getElementById('payroll-detail-modal');
+    const body = document.getElementById('payroll-detail-body');
+    const title = document.getElementById('detail-period-name');
+    
+    const run = data.run;
+    title.textContent = run.period_name || 'Payroll Details';
+    
+    const startDate = run.period_start_date ? new Date(run.period_start_date).toLocaleDateString() : '-';
+    const endDate = run.period_end_date ? new Date(run.period_end_date).toLocaleDateString() : '-';
+    const profitClass = run.net_profit >= 0 ? 'profit-positive' : 'profit-negative';
+    
+    body.innerHTML = `
+        <div class="detail-section">
+            <h4>Period Information</h4>
+            <div class="detail-grid">
+                <div><strong>Period Name:</strong> ${run.period_name || 'N/A'}</div>
+                <div><strong>Date Range:</strong> ${startDate} - ${endDate}</div>
+                <div><strong>Period Number:</strong> ${run.period_number || 'N/A'}</div>
+                <div><strong>Year/Quarter:</strong> ${run.year || 'N/A'} - Q${run.quarter || 'N/A'}</div>
+                ${run.notes ? `<div style="grid-column: 1 / -1;"><strong>Notes:</strong> ${run.notes}</div>` : ''}
+            </div>
+        </div>
+        
+        <div class="detail-section">
+            <h4>Business Summary</h4>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="summary-label">Total Revenue</span>
+                    <span class="summary-value revenue-amount">$${parseFloat(run.total_revenue || 0).toFixed(2)}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total Payroll</span>
+                    <span class="summary-value expense-amount">$${parseFloat(run.total_payroll || 0).toFixed(2)}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Marketing Spend</span>
+                    <span class="summary-value expense-amount">$${parseFloat(run.marketing_spend || 0).toFixed(2)}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Insurance Spend</span>
+                    <span class="summary-value expense-amount">$${parseFloat(run.insurance_spend || 0).toFixed(2)}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total Expenses</span>
+                    <span class="summary-value expense-total">$${parseFloat(run.total_expenses || 0).toFixed(2)}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Net Profit</span>
+                    <span class="summary-value ${profitClass}">$${parseFloat(run.net_profit || 0).toFixed(2)}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Profit Margin</span>
+                    <span class="summary-value ${profitClass}">${parseFloat(run.profit_margin || 0).toFixed(2)}%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detail-section">
+            <h4>Employee Summary</h4>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Total Hours</th>
+                            <th>Total Wages</th>
+                            <th>Total Tips</th>
+                            <th>Total Earnings</th>
+                            <th>Avg Hourly Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.employeeTotals.map(emp => {
+                            const totalEarnings = parseFloat(emp.total_wages) + parseFloat(emp.total_tips);
+                            return `
+                                <tr>
+                                    <td><strong>${emp.employee_name}</strong></td>
+                                    <td>${parseFloat(emp.total_hours).toFixed(2)}</td>
+                                    <td>$${parseFloat(emp.total_wages).toFixed(2)}</td>
+                                    <td>$${parseFloat(emp.total_tips).toFixed(2)}</td>
+                                    <td>$${totalEarnings.toFixed(2)}</td>
+                                    <td>$${parseFloat(emp.avg_hourly_rate).toFixed(2)}/hr</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="detail-section">
+            <h4>Jobs (${data.results.length} total)</h4>
+            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Job #</th>
+                            <th>Status</th>
+                            <th>Address</th>
+                            <th>Job Amount</th>
+                            <th>Tip Amount</th>
+                            <th>Completed Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.results.map(job => `
+                            <tr>
+                                <td>${job.job_number}</td>
+                                <td>${job.job_status}</td>
+                                <td>${job.address || '-'}</td>
+                                <td>$${parseFloat(job.job_amount || 0).toFixed(2)}</td>
+                                <td>$${parseFloat(job.tip_amount || 0).toFixed(2)}</td>
+                                <td>${job.completed_date || '-'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function closePayrollDetailModal() {
+    const modal = document.getElementById('payroll-detail-modal');
+    modal.style.display = 'none';
+    currentDetailPayrollId = null;
+}
+
+async function exportPayrollHistory(id) {
+    try {
+        const data = await apiCall(`/history/${id}`);
+        exportPayrollToCSV(data);
+    } catch (error) {
+        alert(`Failed to export payroll: ${error.message}`);
+    }
+}
+
+function exportPayrollDetail() {
+    if (!currentDetailPayrollId) return;
+    exportPayrollHistory(currentDetailPayrollId);
+}
+
+function exportPayrollToCSV(data) {
+    const run = data.run;
+    const csvData = [];
+    
+    // Header
+    csvData.push(['PAYROLL EXPORT']);
+    csvData.push(['Period Name', run.period_name || 'N/A']);
+    csvData.push(['Date Range', `${run.period_start_date || ''} - ${run.period_end_date || ''}`]);
+    csvData.push([]);
+    
+    // Business Summary
+    csvData.push(['BUSINESS SUMMARY']);
+    csvData.push(['Metric', 'Amount']);
+    csvData.push(['Total Revenue', `$${parseFloat(run.total_revenue || 0).toFixed(2)}`]);
+    csvData.push(['Total Payroll', `$${parseFloat(run.total_payroll || 0).toFixed(2)}`]);
+    csvData.push(['Marketing Spend', `$${parseFloat(run.marketing_spend || 0).toFixed(2)}`]);
+    csvData.push(['Insurance Spend', `$${parseFloat(run.insurance_spend || 0).toFixed(2)}`]);
+    csvData.push(['Total Expenses', `$${parseFloat(run.total_expenses || 0).toFixed(2)}`]);
+    csvData.push(['Net Profit', `$${parseFloat(run.net_profit || 0).toFixed(2)}`]);
+    csvData.push(['Profit Margin', `${parseFloat(run.profit_margin || 0).toFixed(2)}%`]);
+    csvData.push([]);
+    
+    // Employee Summary
+    csvData.push(['EMPLOYEE SUMMARY']);
+    csvData.push(['Employee', 'Total Hours', 'Total Wages', 'Total Tips', 'Total Earnings', 'Avg Hourly Rate']);
+    data.employeeTotals.forEach(emp => {
+        const totalEarnings = parseFloat(emp.total_wages) + parseFloat(emp.total_tips);
+        csvData.push([
+            emp.employee_name,
+            parseFloat(emp.total_hours).toFixed(2),
+            `$${parseFloat(emp.total_wages).toFixed(2)}`,
+            `$${parseFloat(emp.total_tips).toFixed(2)}`,
+            `$${totalEarnings.toFixed(2)}`,
+            `$${parseFloat(emp.avg_hourly_rate).toFixed(2)}/hr`
+        ]);
+    });
+    csvData.push([]);
+    
+    // Jobs
+    csvData.push(['JOBS']);
+    csvData.push(['Job #', 'Status', 'Address', 'Job Amount', 'Tip Amount', 'Completed Date']);
+    data.results.forEach(job => {
+        csvData.push([
+            job.job_number,
+            job.job_status,
+            job.address || '',
+            `$${parseFloat(job.job_amount || 0).toFixed(2)}`,
+            `$${parseFloat(job.tip_amount || 0).toFixed(2)}`,
+            job.completed_date || ''
+        ]);
+    });
+    
+    // Convert to CSV
+    const csv = csvData.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    
+    // Download
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `payroll_${run.period_name || run.id}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
     // Load employees and config
@@ -693,19 +1108,29 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-    // Close modal on outside click
-    const modal = document.getElementById('employee-modal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeEmployeeModal();
+    // Close modals on outside click
+    const modals = ['employee-modal', 'save-payroll-modal', 'history-modal', 'payroll-detail-modal'];
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    if (modalId === 'employee-modal') closeEmployeeModal();
+                    if (modalId === 'save-payroll-modal') closeSavePayrollModal();
+                    if (modalId === 'history-modal') closeHistoryModal();
+                    if (modalId === 'payroll-detail-modal') closePayrollDetailModal();
+                }
+            });
+        }
+    });
+    
+    // Allow Enter key in save payroll modal
+    const savePeriodName = document.getElementById('save-period-name');
+    if (savePeriodName) {
+        savePeriodName.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                confirmSavePayroll();
             }
         });
-    }
-    
-    // Add save button handler if it exists
-    const saveBtn = document.getElementById('save-payroll-btn');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', savePayroll);
     }
 });
