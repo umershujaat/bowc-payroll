@@ -158,7 +158,9 @@ async function processPayrollFile(fileBuffer, fileName, employees, levelsObj, co
         payrollData,
         employees,
         config.marketing_spend,
-        config.insurance_spend
+        config.insurance_spend,
+        config.technology_spend,
+        config.office_staff_spend
     );
     
     return {

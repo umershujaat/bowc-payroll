@@ -1187,7 +1187,10 @@ function clearResults() {
         totalRevenue: 0,
         totalPayroll: 0,
         marketingSpend: 0,
-        insuranceSpend: 0
+        insuranceSpend: 0,
+        technologySpend: 0,
+        officeStaffSpend: 0,
+        payrollTaxes: 0
     };
     const resultsSection = document.getElementById('results-section');
     if (resultsSection) {
