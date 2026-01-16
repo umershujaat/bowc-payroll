@@ -80,8 +80,14 @@ async function loadConfig() {
         config = await apiCall('/config');
         
         // Update UI with config values (non-level settings)
-        if (config.margin_error) document.getElementById('margin-error').value = config.margin_error;
-        if (config.decimal_points) document.getElementById('decimal-points').value = config.decimal_points;
+        if (config.margin_error) {
+            const marginInput = document.getElementById('settings-margin-error');
+            if (marginInput) marginInput.value = config.margin_error;
+        }
+        if (config.decimal_points) {
+            const decimalInput = document.getElementById('settings-decimal-points');
+            if (decimalInput) decimalInput.value = config.decimal_points;
+        }
     } catch (error) {
         console.error('Error loading config:', error);
     }
@@ -90,9 +96,12 @@ async function loadConfig() {
 // Save configuration to API (non-level settings)
 async function saveConfig() {
     try {
+        const marginInput = document.getElementById('settings-margin-error');
+        const decimalInput = document.getElementById('settings-decimal-points');
+        
         const configData = {
-            margin_error: document.getElementById('margin-error').value,
-            decimal_points: document.getElementById('decimal-points').value
+            margin_error: marginInput ? marginInput.value : '0.25',
+            decimal_points: decimalInput ? decimalInput.value : '2'
         };
         
         config = await apiCall('/config', 'PUT', configData);
@@ -100,6 +109,60 @@ async function saveConfig() {
     } catch (error) {
         console.error('Error saving config:', error);
         setStatus(ERROR_STATUS, `Failed to save config: ${error.message}`);
+    }
+}
+
+// Settings modal functions
+function toggleSettingsModal() {
+    const modal = document.getElementById('settings-modal');
+    if (modal.style.display === 'flex') {
+        closeSettingsModal();
+    } else {
+        openSettingsModal();
+    }
+}
+
+function openSettingsModal() {
+    const modal = document.getElementById('settings-modal');
+    const marginInput = document.getElementById('settings-margin-error');
+    const decimalInput = document.getElementById('settings-decimal-points');
+    
+    // Load current values
+    if (config.margin_error) marginInput.value = config.margin_error;
+    if (config.decimal_points) decimalInput.value = config.decimal_points;
+    
+    modal.style.display = 'flex';
+    marginInput.focus();
+}
+
+function closeSettingsModal() {
+    const modal = document.getElementById('settings-modal');
+    modal.style.display = 'none';
+}
+
+async function saveSettings() {
+    const marginInput = document.getElementById('settings-margin-error');
+    const decimalInput = document.getElementById('settings-decimal-points');
+    
+    const marginError = parseFloat(marginInput.value);
+    const decimalPoints = parseInt(decimalInput.value);
+    
+    // Validation
+    if (isNaN(marginError) || marginError < 0) {
+        alert('Please enter a valid margin of error (must be 0 or greater)');
+        return;
+    }
+    
+    if (isNaN(decimalPoints) || decimalPoints < 0 || decimalPoints > 10) {
+        alert('Please enter a valid number of decimal points (0-10)');
+        return;
+    }
+    
+    try {
+        await saveConfig();
+        closeSettingsModal();
+    } catch (error) {
+        alert(`Failed to save settings: ${error.message}`);
     }
 }
 
