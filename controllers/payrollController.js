@@ -119,6 +119,9 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
         }
     });
     
+    // Calculate payroll taxes (7.65% of total payroll cost)
+    businessSummary.payrollTaxes = businessSummary.totalPayroll * 0.0765;
+    
     return { employeeTotals, businessSummary };
 }
 
