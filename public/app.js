@@ -596,9 +596,11 @@ async function runPayroll() {
         return;
     }
     
-    // Validate marketing and insurance spend
+    // Validate business expenses
     const marketingSpend = parseFloat(document.getElementById('marketing-spend').value);
     const insuranceSpend = parseFloat(document.getElementById('insurance-spend').value);
+    const technologySpend = parseFloat(document.getElementById('technology-spend').value);
+    const officeStaffSpend = parseFloat(document.getElementById('office-staff-spend').value);
     
     if (isNaN(marketingSpend) || marketingSpend < 0) {
         showError('Please enter a valid Marketing Spend amount (must be 0 or greater).');
@@ -611,6 +613,20 @@ async function runPayroll() {
         showError('Please enter a valid Insurance Spend amount (must be 0 or greater).');
         setStatus(ERROR_STATUS, 'Invalid Insurance Spend');
         document.getElementById('insurance-spend').focus();
+        return;
+    }
+    
+    if (isNaN(technologySpend) || technologySpend < 0) {
+        showError('Please enter a valid Technology Expense amount (must be 0 or greater).');
+        setStatus(ERROR_STATUS, 'Invalid Technology Expense');
+        document.getElementById('technology-spend').focus();
+        return;
+    }
+    
+    if (isNaN(officeStaffSpend) || officeStaffSpend < 0) {
+        showError('Please enter a valid Office Staff Avg Salary amount (must be 0 or greater).');
+        setStatus(ERROR_STATUS, 'Invalid Office Staff Avg Salary');
+        document.getElementById('office-staff-spend').focus();
         return;
     }
     

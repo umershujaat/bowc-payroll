@@ -88,7 +88,9 @@ router.post('/process', upload.single('file'), async (req, res) => {
                 margin_error: config.margin_error || '0.25',
                 decimal_points: config.decimal_points || '2',
                 marketing_spend: req.body.marketing_spend || '0',
-                insurance_spend: req.body.insurance_spend || '0'
+                insurance_spend: req.body.insurance_spend || '0',
+                technology_spend: req.body.technology_spend || '0',
+                office_staff_spend: req.body.office_staff_spend || '0'
             }
         );
         
