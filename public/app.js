@@ -27,6 +27,8 @@ let businessSummary = {
     insuranceSpend: 0,
     technologySpend: 0,
     officeStaffSpend: 0,
+    vehicleGasSpend: 0,
+    suppliesSpend: 0,
     payrollTaxes: 0
 };
 
@@ -603,6 +605,8 @@ async function runPayroll() {
     const insuranceSpend = parseFloat(document.getElementById('insurance-spend').value);
     const technologySpend = parseFloat(document.getElementById('technology-spend').value);
     const officeStaffSpend = parseFloat(document.getElementById('office-staff-spend').value);
+    const vehicleGasSpend = parseFloat(document.getElementById('vehicle-gas-spend').value);
+    const suppliesSpend = parseFloat(document.getElementById('supplies-spend').value);
     
     if (isNaN(marketingSpend) || marketingSpend < 0) {
         showError('Please enter a valid Marketing Spend amount (must be 0 or greater).');
@@ -629,6 +633,20 @@ async function runPayroll() {
         showError('Please enter a valid Office Staff Avg Salary amount (must be 0 or greater).');
         setStatus(ERROR_STATUS, 'Invalid Office Staff Avg Salary');
         document.getElementById('office-staff-spend').focus();
+        return;
+    }
+    
+    if (isNaN(vehicleGasSpend) || vehicleGasSpend < 0) {
+        showError('Please enter a valid Vehicle Gas Expense amount (must be 0 or greater).');
+        setStatus(ERROR_STATUS, 'Invalid Vehicle Gas Expense');
+        document.getElementById('vehicle-gas-spend').focus();
+        return;
+    }
+    
+    if (isNaN(suppliesSpend) || suppliesSpend < 0) {
+        showError('Please enter a valid Cost of Supplies amount (must be 0 or greater).');
+        setStatus(ERROR_STATUS, 'Invalid Cost of Supplies');
+        document.getElementById('supplies-spend').focus();
         return;
     }
     
@@ -1155,7 +1173,9 @@ function downloadResults() {
     csvData.push(['Insurance Spend', `$${businessSummary.insuranceSpend.toFixed(2)}`]);
     csvData.push(['Technology Expense', `$${(businessSummary.technologySpend || 0).toFixed(2)}`]);
     csvData.push(['Office Staff Avg Salary', `$${(businessSummary.officeStaffSpend || 0).toFixed(2)}`]);
-    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.technologySpend || 0) + (businessSummary.officeStaffSpend || 0);
+    csvData.push(['Vehicle Gas Expense', `$${(businessSummary.vehicleGasSpend || 0).toFixed(2)}`]);
+    csvData.push(['Cost of Supplies', `$${(businessSummary.suppliesSpend || 0).toFixed(2)}`]);
+    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.technologySpend || 0) + (businessSummary.officeStaffSpend || 0) + (businessSummary.vehicleGasSpend || 0) + (businessSummary.suppliesSpend || 0);
     csvData.push(['Total Expenses', `$${totalExpenses.toFixed(2)}`]);
     const netProfit = businessSummary.totalRevenue - totalExpenses;
     csvData.push(['Net Profit', `$${netProfit.toFixed(2)}`]);
@@ -1190,6 +1210,8 @@ function clearResults() {
         insuranceSpend: 0,
         technologySpend: 0,
         officeStaffSpend: 0,
+        vehicleGasSpend: 0,
+        suppliesSpend: 0,
         payrollTaxes: 0
     };
     const resultsSection = document.getElementById('results-section');

@@ -90,7 +90,9 @@ router.post('/process', upload.single('file'), async (req, res) => {
                 marketing_spend: req.body.marketing_spend || '0',
                 insurance_spend: req.body.insurance_spend || '0',
                 technology_spend: req.body.technology_spend || '0',
-                office_staff_spend: req.body.office_staff_spend || '0'
+                office_staff_spend: req.body.office_staff_spend || '0',
+                vehicle_gas_spend: req.body.vehicle_gas_spend || '0',
+                supplies_spend: req.body.supplies_spend || '0'
             }
         );
         

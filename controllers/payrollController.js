@@ -60,7 +60,7 @@ function getOutputReport(data, employees, levels, config) {
 }
 
 // Calculate employee totals and business summary
-function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employees, marketingSpend, insuranceSpend, technologySpend, officeStaffSpend) {
+function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employees, marketingSpend, insuranceSpend, technologySpend, officeStaffSpend, vehicleGasSpend, suppliesSpend) {
     const employee_cols = employees.map(emp => emp.name);
     const numEmployees = employee_cols.length;
     
@@ -82,6 +82,8 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
         insuranceSpend: parseFloat(insuranceSpend) || 0,
         technologySpend: parseFloat(technologySpend) || 0,
         officeStaffSpend: parseFloat(officeStaffSpend) || 0,
+        vehicleGasSpend: parseFloat(vehicleGasSpend) || 0,
+        suppliesSpend: parseFloat(suppliesSpend) || 0,
         payrollTaxes: 0
     };
     
@@ -160,7 +162,9 @@ async function processPayrollFile(fileBuffer, fileName, employees, levelsObj, co
         config.marketing_spend,
         config.insurance_spend,
         config.technology_spend,
-        config.office_staff_spend
+        config.office_staff_spend,
+        config.vehicle_gas_spend,
+        config.supplies_spend
     );
     
     return {
