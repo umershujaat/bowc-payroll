@@ -748,6 +748,20 @@ async function processPayrollFile(file) {
         employeeTotals = data.employeeTotals;
         businessSummary = data.businessSummary;
         
+        // Ensure all expense values are numbers
+        if (businessSummary) {
+            businessSummary.marketingSpend = parseFloat(businessSummary.marketingSpend) || 0;
+            businessSummary.insuranceSpend = parseFloat(businessSummary.insuranceSpend) || 0;
+            businessSummary.technologySpend = parseFloat(businessSummary.technologySpend) || 0;
+            businessSummary.officeStaffSpend = parseFloat(businessSummary.officeStaffSpend) || 0;
+            businessSummary.vehicleGasSpend = parseFloat(businessSummary.vehicleGasSpend) || 0;
+            businessSummary.suppliesSpend = parseFloat(businessSummary.suppliesSpend) || 0;
+            businessSummary.payrollTaxes = parseFloat(businessSummary.payrollTaxes) || 0;
+            businessSummary.stripeCost = parseFloat(businessSummary.stripeCost) || 0;
+            businessSummary.totalRevenue = parseFloat(businessSummary.totalRevenue) || 0;
+            businessSummary.totalPayroll = parseFloat(businessSummary.totalPayroll) || 0;
+        }
+        
         // Display results
         displayResults(results);
         setStatus(SUCCESS_STATUS, `Successfully processed ${results.length} jobs`);
@@ -998,11 +1012,11 @@ function displayBusinessSummary() {
                     </tr>
                     <tr>
                         <td><strong>Marketing Spend</strong></td>
-                        <td class="expense-amount">$${businessSummary.marketingSpend.toFixed(2)}</td>
+                        <td class="expense-amount">$${(businessSummary.marketingSpend || 0).toFixed(2)}</td>
                     </tr>
                     <tr>
                         <td><strong>Insurance Spend</strong></td>
-                        <td class="expense-amount">$${businessSummary.insuranceSpend.toFixed(2)}</td>
+                        <td class="expense-amount">$${(businessSummary.insuranceSpend || 0).toFixed(2)}</td>
                     </tr>
                     <tr>
                         <td><strong>Technology Expense</strong></td>
@@ -1190,8 +1204,8 @@ function downloadResults() {
     csvData.push(['Total Job Revenue', `$${businessSummary.totalRevenue.toFixed(2)}`]);
     csvData.push(['Total Payroll Cost', `$${businessSummary.totalPayroll.toFixed(2)}`]);
     csvData.push(['Payroll Taxes (7.65%)', `$${(businessSummary.payrollTaxes || 0).toFixed(2)}`]);
-    csvData.push(['Marketing Spend', `$${businessSummary.marketingSpend.toFixed(2)}`]);
-    csvData.push(['Insurance Spend', `$${businessSummary.insuranceSpend.toFixed(2)}`]);
+    csvData.push(['Marketing Spend', `$${(businessSummary.marketingSpend || 0).toFixed(2)}`]);
+    csvData.push(['Insurance Spend', `$${(businessSummary.insuranceSpend || 0).toFixed(2)}`]);
     csvData.push(['Technology Expense', `$${(businessSummary.technologySpend || 0).toFixed(2)}`]);
     csvData.push(['Office Staff Avg Salary', `$${(businessSummary.officeStaffSpend || 0).toFixed(2)}`]);
     csvData.push(['Vehicle Gas Expense', `$${(businessSummary.vehicleGasSpend || 0).toFixed(2)}`]);
