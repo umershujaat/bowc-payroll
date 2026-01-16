@@ -572,6 +572,15 @@ async function runPayroll() {
     // Clear previous errors
     hideError();
     
+    // Ensure levels are loaded
+    if (!levels || levels.length === 0) {
+        await loadLevels();
+        // If still empty, use defaults
+        if (!levels || levels.length === 0) {
+            levels = [...DEFAULT_LEVELS];
+        }
+    }
+    
     // Validate employees
     if (employees.length === 0) {
         showError('Please add at least one employee before processing payroll.');
