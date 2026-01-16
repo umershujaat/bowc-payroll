@@ -652,6 +652,15 @@ async function runPayroll() {
         return;
     }
     
+    const adjustmentExpense = parseFloat(document.getElementById('adjustment-expense').value);
+    
+    if (isNaN(adjustmentExpense)) {
+        showError('Please enter a valid Adjustment Expense amount.');
+        setStatus(ERROR_STATUS, 'Invalid Adjustment Expense');
+        document.getElementById('adjustment-expense').focus();
+        return;
+    }
+    
     // Validate file type
     const fileName = selectedFile.name.toLowerCase();
     const isCSV = fileName.endsWith('.csv');
@@ -759,6 +768,7 @@ async function processPayrollFile(file) {
             businessSummary.officeStaffSpend = parseFloat(businessSummary.officeStaffSpend) || 0;
             businessSummary.vehicleGasSpend = parseFloat(businessSummary.vehicleGasSpend) || 0;
             businessSummary.suppliesSpend = parseFloat(businessSummary.suppliesSpend) || 0;
+            businessSummary.adjustmentExpense = parseFloat(businessSummary.adjustmentExpense) || 0;
             businessSummary.payrollTaxes = parseFloat(businessSummary.payrollTaxes) || 0;
             businessSummary.stripeCost = parseFloat(businessSummary.stripeCost) || 0;
             businessSummary.totalRevenue = parseFloat(businessSummary.totalRevenue) || 0;
@@ -1038,6 +1048,10 @@ function displayBusinessSummary() {
                         <td class="expense-amount">$${(businessSummary.suppliesSpend || 0).toFixed(2)}</td>
                     </tr>
                     <tr>
+                        <td><strong>Adjustment Expense</strong></td>
+                        <td class="${(businessSummary.adjustmentExpense || 0) >= 0 ? 'expense-amount' : 'revenue-amount'}">$${(businessSummary.adjustmentExpense || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
                         <td><strong>Stripe Cost (1.5%)</strong></td>
                         <td class="expense-amount">$${(businessSummary.stripeCost || 0).toFixed(2)}</td>
                     </tr>
@@ -1251,6 +1265,7 @@ function clearResults() {
         officeStaffSpend: 0,
         vehicleGasSpend: 0,
         suppliesSpend: 0,
+        adjustmentExpense: 0,
         payrollTaxes: 0,
         stripeCost: 0
     };
