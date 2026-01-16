@@ -202,32 +202,28 @@ function updateLevelsList() {
         return;
     }
     
+    // Sort levels by level_code (L1, L2, L3, L4)
+    const sortedLevels = [...levels].sort((a, b) => {
+        const numA = parseInt(a.level_code.replace('L', ''));
+        const numB = parseInt(b.level_code.replace('L', ''));
+        return numA - numB;
+    });
+    
     listEl.innerHTML = `
         <table class="levels-table">
             <thead>
                 <tr>
-                    <th>Level Code</th>
-                    <th>Name</th>
-                    <th>Type</th>
+                    <th>Level</th>
                     <th>Percentage</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                ${levels.map((level) => {
-                    const type = level.type || (level.is_trainee ? 'Trainee' : 'Technician');
-                    const typeColors = {
-                        'Trainee': '#856404',
-                        'Junior Technician': '#0056b3',
-                        'Senior Technician': '#155724',
-                        'Crew Lead': '#721c24'
-                    };
+                ${sortedLevels.map((level) => {
                     return `
                     <tr>
-                        <td><span class="level-badge level-${level.level_code.toLowerCase()}">${level.level_code}</span></td>
-                        <td><strong>${level.level_name || level.level_code}</strong></td>
-                        <td><span style="color: ${typeColors[type] || '#666'}; font-weight: 500;">${type}</span></td>
-                        <td>${(parseFloat(level.percentage) * 100).toFixed(2)}%</td>
+                        <td><strong>${level.level_code}</strong></td>
+                        <td>${parseFloat(level.percentage).toFixed(2)}</td>
                         <td class="actions-cell">
                             <button class="btn-action btn-edit" onclick="editLevel('${level.level_code}')" title="Edit Level">
                                 Edit
