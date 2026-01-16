@@ -60,7 +60,7 @@ function getOutputReport(data, employees, levels, config) {
 }
 
 // Calculate employee totals and business summary
-function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employees, marketingSpend, insuranceSpend, technologySpend, officeStaffSpend, vehicleGasSpend, suppliesSpend) {
+function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employees, marketingSpend, insuranceSpend, technologySpend, officeStaffSpend, vehicleGasSpend, suppliesSpend, adjustmentExpense) {
     const employee_cols = employees.map(emp => emp.name);
     const numEmployees = employee_cols.length;
     
@@ -84,6 +84,7 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
         officeStaffSpend: parseFloat(officeStaffSpend) || 0,
         vehicleGasSpend: parseFloat(vehicleGasSpend) || 0,
         suppliesSpend: parseFloat(suppliesSpend) || 0,
+        adjustmentExpense: parseFloat(adjustmentExpense) || 0,
         payrollTaxes: 0,
         stripeCost: 0
     };

@@ -29,6 +29,7 @@ let businessSummary = {
     officeStaffSpend: 0,
     vehicleGasSpend: 0,
     suppliesSpend: 0,
+    adjustmentExpense: 0,
     payrollTaxes: 0,
     stripeCost: 0
 };
@@ -700,6 +701,7 @@ async function processPayrollFile(file) {
         const officeStaffSpend = parseFloat(document.getElementById('office-staff-spend').value);
         const vehicleGasSpend = parseFloat(document.getElementById('vehicle-gas-spend').value);
         const suppliesSpend = parseFloat(document.getElementById('supplies-spend').value);
+        const adjustmentExpense = parseFloat(document.getElementById('adjustment-expense').value);
         
         // Create form data
         const formData = new FormData();
@@ -710,6 +712,7 @@ async function processPayrollFile(file) {
         formData.append('office_staff_spend', officeStaffSpend);
         formData.append('vehicle_gas_spend', vehicleGasSpend);
         formData.append('supplies_spend', suppliesSpend);
+        formData.append('adjustment_expense', adjustmentExpense);
         
         // Send to backend
         const response = await fetch(`${API_BASE}/payroll/process`, {

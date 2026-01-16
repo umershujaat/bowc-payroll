@@ -92,7 +92,8 @@ router.post('/process', upload.single('file'), async (req, res) => {
                 technology_spend: req.body.technology_spend || '0',
                 office_staff_spend: req.body.office_staff_spend || '0',
                 vehicle_gas_spend: req.body.vehicle_gas_spend || '0',
-                supplies_spend: req.body.supplies_spend || '0'
+                supplies_spend: req.body.supplies_spend || '0',
+                adjustment_expense: req.body.adjustment_expense || '0'
             }
         );
         
