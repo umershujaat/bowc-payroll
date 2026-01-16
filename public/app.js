@@ -6,9 +6,17 @@ const IN_PROGRESS_STATUS = 'IN_PROGRESS';
 const ERROR_STATUS = 'ERROR';
 const SUCCESS_STATUS = 'SUCCESS';
 
+// Default levels configuration
+const DEFAULT_LEVELS = [
+    { level_code: 'L1', level_name: 'Trainee', type: 'Trainee', percentage: 0.20, hourly_wage: 20.00, is_trainee: true },
+    { level_code: 'L2', level_name: 'Level 2', type: 'Junior Technician', percentage: 0.25, hourly_wage: null, is_trainee: false },
+    { level_code: 'L3', level_name: 'Level 3', type: 'Senior Technician', percentage: 0.27, hourly_wage: null, is_trainee: false },
+    { level_code: 'L4', level_name: 'Level 4', type: 'Crew Lead', percentage: 0.30, hourly_wage: null, is_trainee: false }
+];
+
 // Global state
 let employees = [];
-let levels = [];
+let levels = [...DEFAULT_LEVELS]; // Initialize with defaults
 let config = {};
 let results = [];
 let employeeTotals = {};
@@ -65,13 +73,31 @@ async function loadEmployees() {
 // Load levels from API
 async function loadLevels() {
     try {
-        levels = await apiCall('/levels');
+        const apiLevels = await apiCall('/levels');
+        if (apiLevels && apiLevels.length > 0) {
+            levels = apiLevels;
+        } else {
+            // Use defaults if API returns empty
+            levels = [...DEFAULT_LEVELS];
+        }
         updateLevelsList();
     } catch (error) {
         console.error('Error loading levels:', error);
+        // Use defaults if API fails
+        levels = [...DEFAULT_LEVELS];
+        updateLevelsList();
         // Fallback to config if levels endpoint doesn't work
         await loadConfig();
     }
+}
+
+// Get levels as an object for calculations (backward compatibility)
+function getLevels() {
+    const levelsObj = {};
+    levels.forEach(level => {
+        levelsObj[level.level_code] = level.percentage;
+    });
+    return levelsObj;
 }
 
 // Load configuration from API (for other settings)
