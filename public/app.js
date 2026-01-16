@@ -994,7 +994,7 @@ function displayBusinessSummary() {
     summaryDiv.id = 'business-summary';
     summaryDiv.className = 'business-summary';
     
-    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.technologySpend || 0) + (businessSummary.officeStaffSpend || 0) + (businessSummary.vehicleGasSpend || 0) + (businessSummary.suppliesSpend || 0) + (businessSummary.stripeCost || 0);
+    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.technologySpend || 0) + (businessSummary.officeStaffSpend || 0) + (businessSummary.vehicleGasSpend || 0) + (businessSummary.suppliesSpend || 0) + (businessSummary.adjustmentExpense || 0) + (businessSummary.stripeCost || 0);
     const netProfit = businessSummary.totalRevenue - totalExpenses;
     const profitMargin = businessSummary.totalRevenue > 0 
         ? ((netProfit / businessSummary.totalRevenue) * 100).toFixed(2)
