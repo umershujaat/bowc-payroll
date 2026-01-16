@@ -46,64 +46,18 @@
                 <div class="config-group">
                     <div class="config-header">
                         <h3>Level Percentages</h3>
-                        <button class="btn-secondary" onclick="toggleLevelConfig()">
-                            <span id="level-toggle-icon">▼</span> Show Levels
-                        </button>
+                        <div class="header-actions">
+                            <button class="btn-secondary" onclick="toggleLevelsSection()">
+                                <span id="levels-toggle-icon">▼</span> Show Levels
+                            </button>
+                            <button class="btn-primary" onclick="openLevelModal()">
+                                <span>+</span> Add Level
+                            </button>
+                        </div>
                     </div>
-                    <div id="level-config" class="level-config-collapsible" style="display: none;">
-                        <div class="level-config-grid">
-                            <div class="level-card">
-                                <div class="level-header">
-                                    <span class="level-badge level-l1">L1</span>
-                                    <span class="level-name">Trainee</span>
-                                </div>
-                                <div class="level-inputs">
-                                    <div class="level-input-group">
-                                        <label>Percentage:</label>
-                                        <input type="number" id="level-L1" value="0.20" step="0.01" min="0" max="1" onchange="saveConfig()">
-                                    </div>
-                                    <div class="level-input-group">
-                                        <label>Hourly Wage:</label>
-                                        <input type="number" id="trainee-wage" value="20" step="0.01" min="0" onchange="saveConfig()">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="level-card">
-                                <div class="level-header">
-                                    <span class="level-badge level-l2">L2</span>
-                                    <span class="level-name">Level 2</span>
-                                </div>
-                                <div class="level-inputs">
-                                    <div class="level-input-group">
-                                        <label>Percentage:</label>
-                                        <input type="number" id="level-L2" value="0.25" step="0.01" min="0" max="1" onchange="saveConfig()">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="level-card">
-                                <div class="level-header">
-                                    <span class="level-badge level-l3">L3</span>
-                                    <span class="level-name">Level 3</span>
-                                </div>
-                                <div class="level-inputs">
-                                    <div class="level-input-group">
-                                        <label>Percentage:</label>
-                                        <input type="number" id="level-L3" value="0.27" step="0.01" min="0" max="1" onchange="saveConfig()">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="level-card">
-                                <div class="level-header">
-                                    <span class="level-badge level-l4">L4</span>
-                                    <span class="level-name">Level 4</span>
-                                </div>
-                                <div class="level-inputs">
-                                    <div class="level-input-group">
-                                        <label>Percentage:</label>
-                                        <input type="number" id="level-L4" value="0.30" step="0.01" min="0" max="1" onchange="saveConfig()">
-                                    </div>
-                                </div>
-                            </div>
+                    <div id="levels-section" class="levels-section-collapsible" style="display: none;">
+                        <div id="levels-list" class="levels-table-container">
+                            <p class="empty-state">Loading levels...</p>
                         </div>
                     </div>
                 </div>
@@ -181,6 +135,47 @@
                 </div>
                 <!-- Employee Summary will be inserted here by JavaScript -->
             </section>
+        </div>
+    </div>
+
+    <!-- Level Modal -->
+    <div id="level-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="level-modal-title">Add Level</h3>
+                <button class="modal-close" onclick="closeLevelModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modal-level-code">Level Code <span class="required-indicator">*</span></label>
+                    <input type="text" id="modal-level-code" placeholder="e.g., L1, L2, L3, L4" pattern="^L\d+$" required>
+                    <small style="color: #666; font-size: 12px;">Format: L followed by number (e.g., L1, L2)</small>
+                </div>
+                <div class="form-group">
+                    <label for="modal-level-name">Level Name <span class="required-indicator">*</span></label>
+                    <input type="text" id="modal-level-name" placeholder="e.g., Trainee, Level 2" required>
+                </div>
+                <div class="form-group">
+                    <label for="modal-level-percentage">Percentage <span class="required-indicator">*</span></label>
+                    <input type="number" id="modal-level-percentage" step="0.01" min="0" max="1" placeholder="0.20" required>
+                    <small style="color: #666; font-size: 12px;">Value between 0 and 1 (e.g., 0.20 = 20%)</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="modal-is-trainee" onchange="toggleTraineeWage()">
+                        This is a trainee level (L1)
+                    </label>
+                </div>
+                <div class="form-group" id="trainee-wage-group" style="display: none;">
+                    <label for="modal-hourly-wage">Hourly Wage <span class="required-indicator">*</span></label>
+                    <input type="number" id="modal-hourly-wage" step="0.01" min="0" placeholder="20.00">
+                    <small style="color: #666; font-size: 12px;">Fixed hourly wage for trainees</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeLevelModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveLevelFromModal()">Save</button>
+            </div>
         </div>
     </div>
 

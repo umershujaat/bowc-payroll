@@ -122,7 +122,7 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
 }
 
 // Process payroll file
-async function processPayrollFile(fileBuffer, fileName, employees, levels, config) {
+async function processPayrollFile(fileBuffer, fileName, employees, levelsObj, config) {
     let payrollData;
     
     const fileNameLower = fileName.toLowerCase();
@@ -143,7 +143,7 @@ async function processPayrollFile(fileBuffer, fileName, employees, levels, confi
     }
     
     // Generate output report
-    const { results, rawEmployeeHours } = getOutputReport(payrollData, employees, levels, config);
+    const { results, rawEmployeeHours } = getOutputReport(payrollData, employees, levelsObj, config);
     
     // Calculate totals
     const { employeeTotals, businessSummary } = calculateEmployeeTotals(

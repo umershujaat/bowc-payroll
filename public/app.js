@@ -8,6 +8,7 @@ const SUCCESS_STATUS = 'SUCCESS';
 
 // Global state
 let employees = [];
+let levels = [];
 let config = {};
 let results = [];
 let employeeTotals = {};
@@ -61,17 +62,24 @@ async function loadEmployees() {
     }
 }
 
-// Load configuration from API
+// Load levels from API
+async function loadLevels() {
+    try {
+        levels = await apiCall('/levels');
+        updateLevelsList();
+    } catch (error) {
+        console.error('Error loading levels:', error);
+        // Fallback to config if levels endpoint doesn't work
+        await loadConfig();
+    }
+}
+
+// Load configuration from API (for other settings)
 async function loadConfig() {
     try {
         config = await apiCall('/config');
         
-        // Update UI with config values
-        if (config.level_L1) document.getElementById('level-L1').value = config.level_L1;
-        if (config.level_L2) document.getElementById('level-L2').value = config.level_L2;
-        if (config.level_L3) document.getElementById('level-L3').value = config.level_L3;
-        if (config.level_L4) document.getElementById('level-L4').value = config.level_L4;
-        if (config.trainee_wage) document.getElementById('trainee-wage').value = config.trainee_wage;
+        // Update UI with config values (non-level settings)
         if (config.margin_error) document.getElementById('margin-error').value = config.margin_error;
         if (config.decimal_points) document.getElementById('decimal-points').value = config.decimal_points;
     } catch (error) {
@@ -79,15 +87,10 @@ async function loadConfig() {
     }
 }
 
-// Save configuration to API
+// Save configuration to API (non-level settings)
 async function saveConfig() {
     try {
         const configData = {
-            level_L1: document.getElementById('level-L1').value,
-            level_L2: document.getElementById('level-L2').value,
-            level_L3: document.getElementById('level-L3').value,
-            level_L4: document.getElementById('level-L4').value,
-            trainee_wage: document.getElementById('trainee-wage').value,
             margin_error: document.getElementById('margin-error').value,
             decimal_points: document.getElementById('decimal-points').value
         };
@@ -97,6 +100,214 @@ async function saveConfig() {
     } catch (error) {
         console.error('Error saving config:', error);
         setStatus(ERROR_STATUS, `Failed to save config: ${error.message}`);
+    }
+}
+
+// Level management functions
+function updateLevelsList() {
+    const listEl = document.getElementById('levels-list');
+    if (!listEl) return;
+    
+    if (levels.length === 0) {
+        listEl.innerHTML = '<p class="empty-state">No levels configured. Click "Add Level" to get started.</p>';
+        return;
+    }
+    
+    listEl.innerHTML = `
+        <table class="levels-table">
+            <thead>
+                <tr>
+                    <th>Level Code</th>
+                    <th>Name</th>
+                    <th>Percentage</th>
+                    <th>Hourly Wage</th>
+                    <th>Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${levels.map((level) => `
+                    <tr>
+                        <td><span class="level-badge level-${level.level_code.toLowerCase()}">${level.level_code}</span></td>
+                        <td><strong>${level.level_name || level.level_code}</strong></td>
+                        <td>${(parseFloat(level.percentage) * 100).toFixed(2)}%</td>
+                        <td>${level.hourly_wage ? `$${parseFloat(level.hourly_wage).toFixed(2)}/hr` : '-'}</td>
+                        <td>${level.is_trainee ? '<span style="color: #856404;">Trainee</span>' : 'Technician'}</td>
+                        <td class="actions-cell">
+                            <button class="btn-action btn-edit" onclick="editLevel('${level.level_code}')" title="Edit Level">
+                                Edit
+                            </button>
+                            <button class="btn-action btn-delete" onclick="removeLevel('${level.level_code}')" title="Delete Level">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+// Level modal functions
+let editingLevelCode = null;
+
+function openLevelModal(levelCode = null) {
+    const modal = document.getElementById('level-modal');
+    const title = document.getElementById('level-modal-title');
+    const codeInput = document.getElementById('modal-level-code');
+    const nameInput = document.getElementById('modal-level-name');
+    const percentageInput = document.getElementById('modal-level-percentage');
+    const isTraineeInput = document.getElementById('modal-is-trainee');
+    const wageInput = document.getElementById('modal-hourly-wage');
+    
+    editingLevelCode = levelCode;
+    
+    if (levelCode) {
+        // Edit mode
+        const level = levels.find(l => l.level_code === levelCode);
+        if (level) {
+            title.textContent = 'Edit Level';
+            codeInput.value = level.level_code;
+            codeInput.disabled = true; // Can't change level code
+            nameInput.value = level.level_name || level.level_code;
+            percentageInput.value = level.percentage;
+            isTraineeInput.checked = level.is_trainee || false;
+            wageInput.value = level.hourly_wage || '';
+            toggleTraineeWage();
+        }
+    } else {
+        // Add mode
+        title.textContent = 'Add Level';
+        codeInput.value = '';
+        codeInput.disabled = false;
+        nameInput.value = '';
+        percentageInput.value = '';
+        isTraineeInput.checked = false;
+        wageInput.value = '';
+        document.getElementById('trainee-wage-group').style.display = 'none';
+    }
+    
+    modal.style.display = 'flex';
+    if (!levelCode) {
+        codeInput.focus();
+    } else {
+        nameInput.focus();
+    }
+}
+
+function closeLevelModal() {
+    const modal = document.getElementById('level-modal');
+    modal.style.display = 'none';
+    editingLevelCode = null;
+    document.getElementById('modal-level-code').disabled = false;
+}
+
+function toggleTraineeWage() {
+    const isTrainee = document.getElementById('modal-is-trainee').checked;
+    const wageGroup = document.getElementById('trainee-wage-group');
+    const wageInput = document.getElementById('modal-hourly-wage');
+    
+    if (isTrainee) {
+        wageGroup.style.display = 'block';
+        wageInput.required = true;
+    } else {
+        wageGroup.style.display = 'none';
+        wageInput.required = false;
+        wageInput.value = '';
+    }
+}
+
+async function saveLevelFromModal() {
+    const codeInput = document.getElementById('modal-level-code');
+    const nameInput = document.getElementById('modal-level-name');
+    const percentageInput = document.getElementById('modal-level-percentage');
+    const isTraineeInput = document.getElementById('modal-is-trainee');
+    const wageInput = document.getElementById('modal-hourly-wage');
+    
+    const levelCode = codeInput.value.trim().toUpperCase();
+    const levelName = nameInput.value.trim();
+    const percentage = parseFloat(percentageInput.value);
+    const isTrainee = isTraineeInput.checked;
+    const hourlyWage = isTrainee ? parseFloat(wageInput.value) : null;
+    
+    // Validation
+    if (!levelCode) {
+        alert('Please enter a level code');
+        return;
+    }
+    
+    if (!/^L\d+$/.test(levelCode)) {
+        alert('Level code must be in format L1, L2, L3, etc.');
+        return;
+    }
+    
+    if (!levelName) {
+        alert('Please enter a level name');
+        return;
+    }
+    
+    if (isNaN(percentage) || percentage < 0 || percentage > 1) {
+        alert('Please enter a valid percentage between 0 and 1');
+        return;
+    }
+    
+    if (isTrainee && (!hourlyWage || hourlyWage < 0)) {
+        alert('Please enter a valid hourly wage for trainee level');
+        return;
+    }
+    
+    try {
+        const levelData = {
+            level_code: levelCode,
+            level_name: levelName,
+            percentage: percentage,
+            hourly_wage: hourlyWage,
+            is_trainee: isTrainee
+        };
+        
+        if (editingLevelCode) {
+            await apiCall(`/levels/${editingLevelCode}`, 'PUT', levelData);
+            setStatus(SUCCESS_STATUS, 'Level updated successfully');
+        } else {
+            await apiCall('/levels', 'POST', levelData);
+            setStatus(SUCCESS_STATUS, 'Level added successfully');
+        }
+        
+        closeLevelModal();
+        await loadLevels();
+    } catch (error) {
+        alert(`Failed to save level: ${error.message}`);
+    }
+}
+
+function editLevel(code) {
+    openLevelModal(code);
+}
+
+async function removeLevel(code) {
+    if (!confirm(`Are you sure you want to delete level ${code}? This cannot be undone.`)) {
+        return;
+    }
+    
+    try {
+        await apiCall(`/levels/${code}`, 'DELETE');
+        await loadLevels();
+        setStatus(SUCCESS_STATUS, 'Level removed successfully');
+    } catch (error) {
+        alert(`Failed to remove level: ${error.message}`);
+    }
+}
+
+function toggleLevelsSection() {
+    const sectionDiv = document.getElementById('levels-section');
+    const icon = document.getElementById('levels-toggle-icon');
+    
+    if (sectionDiv.style.display === 'none') {
+        sectionDiv.style.display = 'block';
+        icon.textContent = '▲';
+    } else {
+        sectionDiv.style.display = 'none';
+        icon.textContent = '▼';
     }
 }
 
@@ -237,18 +448,7 @@ function toggleEmployeesSection() {
     }
 }
 
-function toggleLevelConfig() {
-    const configDiv = document.getElementById('level-config');
-    const icon = document.getElementById('level-toggle-icon');
-    
-    if (configDiv.style.display === 'none') {
-        configDiv.style.display = 'block';
-        icon.textContent = '▲';
-    } else {
-        configDiv.style.display = 'none';
-        icon.textContent = '▼';
-    }
-}
+// Removed toggleLevelConfig - replaced with toggleLevelsSection
 
 // File handling
 let selectedFile = null;
@@ -1238,8 +1438,9 @@ function exportPayrollToCSV(data) {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
-    // Load employees and config
+    // Load employees, levels, and config
     await loadEmployees();
+    await loadLevels();
     await loadConfig();
     
     // Allow Enter key in modal
@@ -1274,6 +1475,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         savePeriodName.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 confirmSavePayroll();
+            }
+        });
+    }
+    
+    // Allow Enter key in level modal
+    const levelCodeInput = document.getElementById('modal-level-code');
+    if (levelCodeInput) {
+        levelCodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                saveLevelFromModal();
+            }
+        });
+    }
+    
+    // Close level modal on outside click
+    const levelModal = document.getElementById('level-modal');
+    if (levelModal) {
+        levelModal.addEventListener('click', function(e) {
+            if (e.target === levelModal) {
+                closeLevelModal();
             }
         });
     }
