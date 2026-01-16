@@ -97,6 +97,12 @@ header h1 {
     white-space: nowrap;
 }
 
+.toggle-icon {
+    font-size: 12px;
+    margin-left: 4px;
+    transition: transform 0.3s;
+}
+
 /* Settings button in header */
 .btn-settings {
     background: rgba(255, 255, 255, 0.2);

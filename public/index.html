@@ -19,13 +19,15 @@
                     <p class="subtitle">Window Cleaning Company Payroll Processing Tool</p>
                 </div>
                 <div class="header-menu">
-                    <button class="menu-btn" onclick="openEmployeeModal()" title="Add Employee">
+                    <button class="menu-btn" onclick="toggleEmployeesSection()" title="Toggle Employees">
                         <span class="menu-icon">👤</span>
                         <span class="menu-text">Employees</span>
+                        <span id="header-employees-toggle-icon" class="toggle-icon">▼</span>
                     </button>
-                    <button class="menu-btn" onclick="openLevelModal()" title="Add Level">
+                    <button class="menu-btn" onclick="toggleLevelsSection()" title="Toggle Levels">
                         <span class="menu-icon">📊</span>
                         <span class="menu-text">Levels</span>
+                        <span id="header-levels-toggle-icon" class="toggle-icon">▼</span>
                     </button>
                     <button class="btn-settings" onclick="toggleSettingsModal()" title="Settings">
                         <span style="font-size: 24px;">⚙️</span>
@@ -44,10 +46,7 @@
                     <div class="config-header">
                         <h3>Employees</h3>
                         <div class="header-actions">
-                            <button class="btn-secondary" onclick="toggleEmployeesSection()">
-                                <span id="employees-toggle-icon">▼</span> Show Employees
-                            </button>
-                            <button class="btn-primary" onclick="openEmployeeModal()">
+                            <button class="btn-add" onclick="openEmployeeModal()">
                                 <span>+</span> Add Employee
                             </button>
                         </div>
@@ -64,9 +63,6 @@
                     <div class="config-header">
                         <h3>Level Percentages</h3>
                         <div class="header-actions">
-                            <button class="btn-toggle" onclick="toggleLevelsSection()">
-                                <span id="levels-toggle-icon">▼</span> Show Levels
-                            </button>
                             <button class="btn-add" onclick="openLevelModal()">
                                 <span>+</span> Add Level
                             </button>

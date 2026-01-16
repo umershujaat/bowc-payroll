@@ -351,13 +351,16 @@ async function removeLevel(code) {
 function toggleLevelsSection() {
     const sectionDiv = document.getElementById('levels-section');
     const icon = document.getElementById('levels-toggle-icon');
+    const headerIcon = document.getElementById('header-levels-toggle-icon');
     
     if (sectionDiv.style.display === 'none') {
         sectionDiv.style.display = 'block';
-        icon.textContent = '▲';
+        if (icon) icon.textContent = '▲';
+        if (headerIcon) headerIcon.textContent = '▲';
     } else {
         sectionDiv.style.display = 'none';
-        icon.textContent = '▼';
+        if (icon) icon.textContent = '▼';
+        if (headerIcon) headerIcon.textContent = '▼';
     }
 }
 
@@ -488,13 +491,16 @@ function editEmployee(id) {
 function toggleEmployeesSection() {
     const sectionDiv = document.getElementById('employees-section');
     const icon = document.getElementById('employees-toggle-icon');
+    const headerIcon = document.getElementById('header-employees-toggle-icon');
     
     if (sectionDiv.style.display === 'none') {
         sectionDiv.style.display = 'block';
-        icon.textContent = '▲';
+        if (icon) icon.textContent = '▲';
+        if (headerIcon) headerIcon.textContent = '▲';
     } else {
         sectionDiv.style.display = 'none';
-        icon.textContent = '▼';
+        if (icon) icon.textContent = '▼';
+        if (headerIcon) headerIcon.textContent = '▼';
     }
 }
 
