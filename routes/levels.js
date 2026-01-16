@@ -17,11 +17,11 @@ router.get('/', async (req, res) => {
                 config[row.config_key] = row.config_value;
             });
             
-            // Convert to levels format
-            if (config.level_L1) levels.push({ level_code: 'L1', level_name: 'Trainee', percentage: parseFloat(config.level_L1), hourly_wage: parseFloat(config.trainee_wage || 20), is_trainee: true });
-            if (config.level_L2) levels.push({ level_code: 'L2', level_name: 'Level 2', percentage: parseFloat(config.level_L2), hourly_wage: null, is_trainee: false });
-            if (config.level_L3) levels.push({ level_code: 'L3', level_name: 'Level 3', percentage: parseFloat(config.level_L3), hourly_wage: null, is_trainee: false });
-            if (config.level_L4) levels.push({ level_code: 'L4', level_name: 'Level 4', percentage: parseFloat(config.level_L4), hourly_wage: null, is_trainee: false });
+            // Convert to levels format with default types
+            if (config.level_L1) levels.push({ level_code: 'L1', level_name: 'Trainee', type: 'Trainee', percentage: parseFloat(config.level_L1), hourly_wage: parseFloat(config.trainee_wage || 20), is_trainee: true });
+            if (config.level_L2) levels.push({ level_code: 'L2', level_name: 'Level 2', type: 'Junior Technician', percentage: parseFloat(config.level_L2), hourly_wage: null, is_trainee: false });
+            if (config.level_L3) levels.push({ level_code: 'L3', level_name: 'Level 3', type: 'Senior Technician', percentage: parseFloat(config.level_L3), hourly_wage: null, is_trainee: false });
+            if (config.level_L4) levels.push({ level_code: 'L4', level_name: 'Level 4', type: 'Crew Lead', percentage: parseFloat(config.level_L4), hourly_wage: null, is_trainee: false });
             
             res.json(levels);
         } catch (fallbackError) {
@@ -34,24 +34,32 @@ router.get('/', async (req, res) => {
 // Add new level
 router.post('/', async (req, res) => {
     try {
-        const { level_code, level_name, percentage, hourly_wage, is_trainee } = req.body;
+        const { level_code, level_name, type, percentage, hourly_wage, is_trainee } = req.body;
         
-        if (!level_code || !level_name || percentage === undefined) {
-            return res.status(400).json({ error: 'Level code, name, and percentage are required' });
+        if (!level_code || !level_name || !type || percentage === undefined) {
+            return res.status(400).json({ error: 'Level code, name, type, and percentage are required' });
         }
         
         if (!/^L\d+$/.test(level_code)) {
             return res.status(400).json({ error: 'Level code must be in format L1, L2, L3, etc.' });
         }
         
+        const validTypes = ['Trainee', 'Junior Technician', 'Senior Technician', 'Crew Lead'];
+        if (!validTypes.includes(type)) {
+            return res.status(400).json({ error: `Type must be one of: ${validTypes.join(', ')}` });
+        }
+        
         if (percentage < 0 || percentage > 1) {
             return res.status(400).json({ error: 'Percentage must be between 0 and 1' });
         }
         
+        // Determine is_trainee from type
+        const isTrainee = type === 'Trainee' || is_trainee === true;
+        
         try {
             const [result] = await db.execute(
-                'INSERT INTO levels (level_code, level_name, percentage, hourly_wage, is_trainee) VALUES (?, ?, ?, ?, ?)',
-                [level_code.toUpperCase(), level_name, percentage, hourly_wage || null, is_trainee || false]
+                'INSERT INTO levels (level_code, level_name, type, percentage, hourly_wage, is_trainee) VALUES (?, ?, ?, ?, ?, ?)',
+                [level_code.toUpperCase(), level_name, type, percentage, hourly_wage || null, isTrainee]
             );
             
             // Also update configurations table for backward compatibility
@@ -60,7 +68,7 @@ router.post('/', async (req, res) => {
                 [`level_${level_code.toUpperCase()}`, percentage.toString(), percentage.toString()]
             );
             
-            if (is_trainee && hourly_wage) {
+            if (isTrainee && hourly_wage) {
                 await db.execute(
                     'INSERT INTO configurations (config_key, config_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE config_value = ?',
                     ['trainee_wage', hourly_wage.toString(), hourly_wage.toString()]
@@ -77,7 +85,7 @@ router.post('/', async (req, res) => {
                     [`level_${level_code.toUpperCase()}`, percentage.toString(), percentage.toString()]
                 );
                 
-                if (is_trainee && hourly_wage) {
+                if (isTrainee && hourly_wage) {
                     await db.execute(
                         'INSERT INTO configurations (config_key, config_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE config_value = ?',
                         ['trainee_wage', hourly_wage.toString(), hourly_wage.toString()]
@@ -87,9 +95,10 @@ router.post('/', async (req, res) => {
                 res.status(201).json({
                     level_code: level_code.toUpperCase(),
                     level_name,
+                    type,
                     percentage,
                     hourly_wage: hourly_wage || null,
-                    is_trainee: is_trainee || false
+                    is_trainee: isTrainee
                 });
             } else {
                 throw dbError;
@@ -108,7 +117,7 @@ router.post('/', async (req, res) => {
 router.put('/:code', async (req, res) => {
     try {
         const { code } = req.params;
-        const { level_name, percentage, hourly_wage, is_trainee } = req.body;
+        const { level_name, type, percentage, hourly_wage, is_trainee } = req.body;
         
         if (percentage === undefined) {
             return res.status(400).json({ error: 'Percentage is required' });
@@ -118,10 +127,35 @@ router.put('/:code', async (req, res) => {
             return res.status(400).json({ error: 'Percentage must be between 0 and 1' });
         }
         
+        if (type) {
+            const validTypes = ['Trainee', 'Junior Technician', 'Senior Technician', 'Crew Lead'];
+            if (!validTypes.includes(type)) {
+                return res.status(400).json({ error: `Type must be one of: ${validTypes.join(', ')}` });
+            }
+        }
+        
+        // Determine is_trainee from type if provided
+        const isTrainee = type === 'Trainee' || (type === undefined && is_trainee === true) || false;
+        
         try {
+            const updateFields = ['level_name = ?', 'percentage = ?', 'is_trainee = ?'];
+            const updateValues = [level_name, percentage, isTrainee];
+            
+            if (type) {
+                updateFields.push('type = ?');
+                updateValues.push(type);
+            }
+            
+            if (hourly_wage !== undefined) {
+                updateFields.push('hourly_wage = ?');
+                updateValues.push(hourly_wage || null);
+            }
+            
+            updateValues.push(code.toUpperCase());
+            
             await db.execute(
-                'UPDATE levels SET level_name = ?, percentage = ?, hourly_wage = ?, is_trainee = ? WHERE level_code = ?',
-                [level_name, percentage, hourly_wage || null, is_trainee || false, code.toUpperCase()]
+                `UPDATE levels SET ${updateFields.join(', ')} WHERE level_code = ?`,
+                updateValues
             );
             
             // Also update configurations table
@@ -130,7 +164,7 @@ router.put('/:code', async (req, res) => {
                 [`level_${code.toUpperCase()}`, percentage.toString(), percentage.toString()]
             );
             
-            if (is_trainee && hourly_wage) {
+            if (isTrainee && hourly_wage) {
                 await db.execute(
                     'INSERT INTO configurations (config_key, config_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE config_value = ?',
                     ['trainee_wage', hourly_wage.toString(), hourly_wage.toString()]
@@ -147,7 +181,7 @@ router.put('/:code', async (req, res) => {
                     [`level_${code.toUpperCase()}`, percentage.toString(), percentage.toString()]
                 );
                 
-                if (is_trainee && hourly_wage) {
+                if (isTrainee && hourly_wage) {
                     await db.execute(
                         'INSERT INTO configurations (config_key, config_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE config_value = ?',
                         ['trainee_wage', hourly_wage.toString(), hourly_wage.toString()]
@@ -157,9 +191,10 @@ router.put('/:code', async (req, res) => {
                 res.json({
                     level_code: code.toUpperCase(),
                     level_name: level_name || `Level ${code}`,
+                    type: type || 'Junior Technician',
                     percentage,
                     hourly_wage: hourly_wage || null,
-                    is_trainee: is_trainee || false
+                    is_trainee: isTrainee
                 });
             } else {
                 throw dbError;

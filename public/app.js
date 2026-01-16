@@ -119,20 +119,26 @@ function updateLevelsList() {
                 <tr>
                     <th>Level Code</th>
                     <th>Name</th>
-                    <th>Percentage</th>
-                    <th>Hourly Wage</th>
                     <th>Type</th>
+                    <th>Percentage</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                ${levels.map((level) => `
+                ${levels.map((level) => {
+                    const type = level.type || (level.is_trainee ? 'Trainee' : 'Technician');
+                    const typeColors = {
+                        'Trainee': '#856404',
+                        'Junior Technician': '#0056b3',
+                        'Senior Technician': '#155724',
+                        'Crew Lead': '#721c24'
+                    };
+                    return `
                     <tr>
                         <td><span class="level-badge level-${level.level_code.toLowerCase()}">${level.level_code}</span></td>
                         <td><strong>${level.level_name || level.level_code}</strong></td>
+                        <td><span style="color: ${typeColors[type] || '#666'}; font-weight: 500;">${type}</span></td>
                         <td>${(parseFloat(level.percentage) * 100).toFixed(2)}%</td>
-                        <td>${level.hourly_wage ? `$${parseFloat(level.hourly_wage).toFixed(2)}/hr` : '-'}</td>
-                        <td>${level.is_trainee ? '<span style="color: #856404;">Trainee</span>' : 'Technician'}</td>
                         <td class="actions-cell">
                             <button class="btn-action btn-edit" onclick="editLevel('${level.level_code}')" title="Edit Level">
                                 Edit
@@ -142,7 +148,8 @@ function updateLevelsList() {
                             </button>
                         </td>
                     </tr>
-                `).join('')}
+                `;
+                }).join('')}
             </tbody>
         </table>
     `;
@@ -156,9 +163,8 @@ function openLevelModal(levelCode = null) {
     const title = document.getElementById('level-modal-title');
     const codeInput = document.getElementById('modal-level-code');
     const nameInput = document.getElementById('modal-level-name');
+    const typeSelect = document.getElementById('modal-level-type');
     const percentageInput = document.getElementById('modal-level-percentage');
-    const isTraineeInput = document.getElementById('modal-is-trainee');
-    const wageInput = document.getElementById('modal-hourly-wage');
     
     editingLevelCode = levelCode;
     
@@ -171,9 +177,9 @@ function openLevelModal(levelCode = null) {
             codeInput.disabled = true; // Can't change level code
             nameInput.value = level.level_name || level.level_code;
             percentageInput.value = level.percentage;
-            isTraineeInput.checked = level.is_trainee || false;
-            wageInput.value = level.hourly_wage || '';
-            toggleTraineeWage();
+            // Set type from level.type or fallback to is_trainee
+            const type = level.type || (level.is_trainee ? 'Trainee' : 'Technician');
+            typeSelect.value = type;
         }
     } else {
         // Add mode
@@ -182,9 +188,7 @@ function openLevelModal(levelCode = null) {
         codeInput.disabled = false;
         nameInput.value = '';
         percentageInput.value = '';
-        isTraineeInput.checked = false;
-        wageInput.value = '';
-        document.getElementById('trainee-wage-group').style.display = 'none';
+        typeSelect.value = '';
     }
     
     modal.style.display = 'flex';
@@ -202,33 +206,16 @@ function closeLevelModal() {
     document.getElementById('modal-level-code').disabled = false;
 }
 
-function toggleTraineeWage() {
-    const isTrainee = document.getElementById('modal-is-trainee').checked;
-    const wageGroup = document.getElementById('trainee-wage-group');
-    const wageInput = document.getElementById('modal-hourly-wage');
-    
-    if (isTrainee) {
-        wageGroup.style.display = 'block';
-        wageInput.required = true;
-    } else {
-        wageGroup.style.display = 'none';
-        wageInput.required = false;
-        wageInput.value = '';
-    }
-}
-
 async function saveLevelFromModal() {
     const codeInput = document.getElementById('modal-level-code');
     const nameInput = document.getElementById('modal-level-name');
+    const typeSelect = document.getElementById('modal-level-type');
     const percentageInput = document.getElementById('modal-level-percentage');
-    const isTraineeInput = document.getElementById('modal-is-trainee');
-    const wageInput = document.getElementById('modal-hourly-wage');
     
     const levelCode = codeInput.value.trim().toUpperCase();
     const levelName = nameInput.value.trim();
+    const type = typeSelect.value;
     const percentage = parseFloat(percentageInput.value);
-    const isTrainee = isTraineeInput.checked;
-    const hourlyWage = isTrainee ? parseFloat(wageInput.value) : null;
     
     // Validation
     if (!levelCode) {
@@ -246,13 +233,13 @@ async function saveLevelFromModal() {
         return;
     }
     
-    if (isNaN(percentage) || percentage < 0 || percentage > 1) {
-        alert('Please enter a valid percentage between 0 and 1');
+    if (!type) {
+        alert('Please select a type');
         return;
     }
     
-    if (isTrainee && (!hourlyWage || hourlyWage < 0)) {
-        alert('Please enter a valid hourly wage for trainee level');
+    if (isNaN(percentage) || percentage < 0 || percentage > 1) {
+        alert('Please enter a valid percentage between 0 and 1');
         return;
     }
     
@@ -260,9 +247,9 @@ async function saveLevelFromModal() {
         const levelData = {
             level_code: levelCode,
             level_name: levelName,
+            type: type,
             percentage: percentage,
-            hourly_wage: hourlyWage,
-            is_trainee: isTrainee
+            is_trainee: type === 'Trainee' // Keep for backward compatibility
         };
         
         if (editingLevelCode) {
