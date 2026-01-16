@@ -1124,9 +1124,10 @@ function downloadResults() {
     csvData.push(['Metric', 'Amount']);
     csvData.push(['Total Job Revenue', `$${businessSummary.totalRevenue.toFixed(2)}`]);
     csvData.push(['Total Payroll Cost', `$${businessSummary.totalPayroll.toFixed(2)}`]);
+    csvData.push(['Payroll Taxes (7.65%)', `$${(businessSummary.payrollTaxes || 0).toFixed(2)}`]);
     csvData.push(['Marketing Spend', `$${businessSummary.marketingSpend.toFixed(2)}`]);
     csvData.push(['Insurance Spend', `$${businessSummary.insuranceSpend.toFixed(2)}`]);
-    const totalExpenses = businessSummary.totalPayroll + businessSummary.marketingSpend + businessSummary.insuranceSpend;
+    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend;
     csvData.push(['Total Expenses', `$${totalExpenses.toFixed(2)}`]);
     const netProfit = businessSummary.totalRevenue - totalExpenses;
     csvData.push(['Net Profit', `$${netProfit.toFixed(2)}`]);
