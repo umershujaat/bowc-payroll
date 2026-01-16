@@ -1012,6 +1012,14 @@ function displayBusinessSummary() {
                         <td class="expense-amount">$${(businessSummary.officeStaffSpend || 0).toFixed(2)}</td>
                     </tr>
                     <tr>
+                        <td><strong>Vehicle Gas Expense</strong></td>
+                        <td class="expense-amount">$${(businessSummary.vehicleGasSpend || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cost of Supplies</strong></td>
+                        <td class="expense-amount">$${(businessSummary.suppliesSpend || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
                         <td><strong>Total Expenses</strong></td>
                         <td class="expense-total">$${totalExpenses.toFixed(2)}</td>
                     </tr>
