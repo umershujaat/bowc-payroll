@@ -13,14 +13,24 @@
 <body>
     <div class="container">
         <header>
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <div>
+            <div class="header-top">
+                <div class="header-title">
                     <h1>Payroll Calculator</h1>
                     <p class="subtitle">Window Cleaning Company Payroll Processing Tool</p>
                 </div>
-                <button class="btn-settings" onclick="toggleSettingsModal()" title="Settings">
-                    <span style="font-size: 24px;">⚙️</span>
-                </button>
+                <div class="header-menu">
+                    <button class="menu-btn" onclick="openEmployeeModal()" title="Add Employee">
+                        <span class="menu-icon">👤</span>
+                        <span class="menu-text">Employees</span>
+                    </button>
+                    <button class="menu-btn" onclick="openLevelModal()" title="Add Level">
+                        <span class="menu-icon">📊</span>
+                        <span class="menu-text">Levels</span>
+                    </button>
+                    <button class="btn-settings" onclick="toggleSettingsModal()" title="Settings">
+                        <span style="font-size: 24px;">⚙️</span>
+                    </button>
+                </div>
             </div>
         </header>
 

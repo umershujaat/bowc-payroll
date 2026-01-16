@@ -28,17 +28,124 @@ header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 30px;
-    text-align: center;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header-title {
+    flex: 1;
+    min-width: 200px;
 }
 
 header h1 {
     font-size: 2.5em;
-    margin-bottom: 10px;
+    margin: 0 0 10px 0;
 }
 
 .subtitle {
     font-size: 1.1em;
     opacity: 0.9;
+    margin: 0;
+}
+
+.header-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.menu-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    min-height: 44px;
+}
+
+.menu-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.menu-btn:active {
+    transform: translateY(0);
+}
+
+.menu-icon {
+    font-size: 18px;
+}
+
+.menu-text {
+    white-space: nowrap;
+}
+
+/* Settings button in header */
+.btn-settings {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    min-height: 50px;
+}
+
+.btn-settings:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: rotate(90deg);
+}
+
+.btn-settings:active {
+    transform: rotate(90deg) scale(0.95);
+}
+
+/* Responsive header menu */
+@media (max-width: 768px) {
+    .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .header-menu {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .menu-text {
+        display: none;
+    }
+    
+    .menu-btn {
+        min-width: 44px;
+        padding: 10px;
+    }
+    
+    header h1 {
+        font-size: 2em;
+    }
 }
 
 .main-content {
@@ -149,6 +256,52 @@ section h2 {
     display: flex;
     gap: 10px;
     align-items: center;
+}
+
+/* Unified button styles for header actions - all same size */
+.btn-toggle,
+.btn-add {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    min-width: 150px;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.btn-toggle {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-toggle:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-add {
+    background: #007bff;
+    color: white;
+}
+
+.btn-add:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.btn-add:active,
+.btn-toggle:active {
+    transform: translateY(0);
 }
 
 /* Buttons */

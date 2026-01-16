@@ -1548,4 +1548,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     }
+    
+    // Close settings modal on outside click
+    const settingsModal = document.getElementById('settings-modal');
+    if (settingsModal) {
+        settingsModal.addEventListener('click', function(e) {
+            if (e.target === settingsModal) {
+                closeSettingsModal();
+            }
+        });
+    }
 });
