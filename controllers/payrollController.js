@@ -79,12 +79,15 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
         totalRevenue: 0,
         totalPayroll: 0,
         marketingSpend: parseFloat(marketingSpend) || 0,
-        insuranceSpend: parseFloat(insuranceSpend) || 0
+        insuranceSpend: parseFloat(insuranceSpend) || 0,
+        totalTips: 0
     };
     
     // Use raw hours for totals
+    let totalLaborHours = 0;
     employee_cols.forEach(emp => {
         employeeTotals[emp].totalHours = rawEmployeeHours[emp] || 0;
+        totalLaborHours += employeeTotals[emp].totalHours;
     });
     
     // Calculate totals from all jobs
@@ -105,6 +108,7 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
             employeeTotals[emp].totalWages += wages;
             employeeTotals[emp].totalTips += tips;
             businessSummary.totalPayroll += wages;
+            businessSummary.totalTips += tips;
         });
     });
     
@@ -117,6 +121,35 @@ function calculateEmployeeTotals(results, rawEmployeeHours, originalData, employ
             total.avgHourlyRate = 0;
         }
     });
+    
+    // Calculate additional business metrics
+    const jobCount = results.length;
+    const numEmployees = employee_cols.length;
+    const totalExpenses = businessSummary.totalPayroll + businessSummary.marketingSpend + businessSummary.insuranceSpend;
+    
+    // Operational Metrics
+    businessSummary.jobCount = jobCount;
+    businessSummary.averageJobValue = jobCount > 0 ? businessSummary.totalRevenue / jobCount : 0;
+    businessSummary.averageTipPerJob = jobCount > 0 ? businessSummary.totalTips / jobCount : 0;
+    businessSummary.totalLaborHours = totalLaborHours;
+    
+    // Efficiency & Productivity Metrics
+    businessSummary.revenuePerHour = totalLaborHours > 0 ? businessSummary.totalRevenue / totalLaborHours : 0;
+    businessSummary.payrollPercentage = businessSummary.totalRevenue > 0 ? (businessSummary.totalPayroll / businessSummary.totalRevenue) * 100 : 0;
+    businessSummary.averageHoursPerJob = jobCount > 0 ? totalLaborHours / jobCount : 0;
+    businessSummary.jobsPerEmployee = numEmployees > 0 ? jobCount / numEmployees : 0;
+    businessSummary.revenuePerEmployee = numEmployees > 0 ? businessSummary.totalRevenue / numEmployees : 0;
+    
+    // Cost Analysis Metrics
+    businessSummary.payrollCostPerJob = jobCount > 0 ? businessSummary.totalPayroll / jobCount : 0;
+    businessSummary.marketingCostPerJob = jobCount > 0 ? businessSummary.marketingSpend / jobCount : 0;
+    businessSummary.insuranceCostPerJob = jobCount > 0 ? businessSummary.insuranceSpend / jobCount : 0;
+    businessSummary.totalCostPerJob = jobCount > 0 ? totalExpenses / jobCount : 0;
+    
+    // Labor Efficiency Metrics
+    businessSummary.averageHourlyWage = totalLaborHours > 0 ? businessSummary.totalPayroll / totalLaborHours : 0;
+    businessSummary.laborCostRatio = businessSummary.totalRevenue > 0 ? (businessSummary.totalPayroll / businessSummary.totalRevenue) * 100 : 0;
+    businessSummary.productivityIndex = totalExpenses > 0 ? businessSummary.totalRevenue / totalExpenses : 0;
     
     return { employeeTotals, businessSummary };
 }

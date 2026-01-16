@@ -24,7 +24,24 @@ let businessSummary = {
     totalRevenue: 0,
     totalPayroll: 0,
     marketingSpend: 0,
-    insuranceSpend: 0
+    insuranceSpend: 0,
+    totalTips: 0,
+    jobCount: 0,
+    averageJobValue: 0,
+    averageTipPerJob: 0,
+    totalLaborHours: 0,
+    revenuePerHour: 0,
+    payrollPercentage: 0,
+    averageHoursPerJob: 0,
+    jobsPerEmployee: 0,
+    revenuePerEmployee: 0,
+    payrollCostPerJob: 0,
+    marketingCostPerJob: 0,
+    insuranceCostPerJob: 0,
+    totalCostPerJob: 0,
+    averageHourlyWage: 0,
+    laborCostRatio: 0,
+    productivityIndex: 0
 };
 
 // Status management
@@ -929,7 +946,10 @@ function displayBusinessSummary() {
     
     summaryDiv.innerHTML = `
         <h3>Business Summary</h3>
-        <div class="summary-table-container">
+        
+        <!-- Core Financial Metrics -->
+        <div class="summary-table-container" style="margin-bottom: 30px;">
+            <h4 style="color: #667eea; margin-bottom: 15px; font-size: 1.2em;">Core Financial Metrics</h4>
             <table id="business-summary-table">
                 <thead>
                     <tr>
@@ -965,6 +985,134 @@ function displayBusinessSummary() {
                     <tr>
                         <td><strong>Profit Margin</strong></td>
                         <td class="${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}">${profitMargin}%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Operational Metrics -->
+        <div class="summary-table-container" style="margin-bottom: 30px;">
+            <h4 style="color: #667eea; margin-bottom: 15px; font-size: 1.2em;">Operational Metrics</h4>
+            <table class="business-summary-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Number of Jobs Completed</strong></td>
+                        <td>${businessSummary.jobCount || 0}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Average Job Value</strong></td>
+                        <td>$${(businessSummary.averageJobValue || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Tips Collected</strong></td>
+                        <td class="revenue-amount">$${(businessSummary.totalTips || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Average Tip per Job</strong></td>
+                        <td>$${(businessSummary.averageTipPerJob || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Labor Hours</strong></td>
+                        <td>${(businessSummary.totalLaborHours || 0).toFixed(2)} hrs</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Efficiency & Productivity -->
+        <div class="summary-table-container" style="margin-bottom: 30px;">
+            <h4 style="color: #667eea; margin-bottom: 15px; font-size: 1.2em;">Efficiency & Productivity</h4>
+            <table class="business-summary-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Revenue per Hour</strong></td>
+                        <td class="revenue-amount">$${(businessSummary.revenuePerHour || 0).toFixed(2)}/hr</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Payroll Percentage</strong></td>
+                        <td>${(businessSummary.payrollPercentage || 0).toFixed(2)}%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Average Hours per Job</strong></td>
+                        <td>${(businessSummary.averageHoursPerJob || 0).toFixed(2)} hrs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jobs per Employee</strong></td>
+                        <td>${(businessSummary.jobsPerEmployee || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Revenue per Employee</strong></td>
+                        <td class="revenue-amount">$${(businessSummary.revenuePerEmployee || 0).toFixed(2)}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Cost Analysis -->
+        <div class="summary-table-container" style="margin-bottom: 30px;">
+            <h4 style="color: #667eea; margin-bottom: 15px; font-size: 1.2em;">Cost Analysis</h4>
+            <table class="business-summary-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Payroll Cost per Job</strong></td>
+                        <td class="expense-amount">$${(businessSummary.payrollCostPerJob || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Marketing Cost per Job</strong></td>
+                        <td class="expense-amount">$${(businessSummary.marketingCostPerJob || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Insurance Cost per Job</strong></td>
+                        <td class="expense-amount">$${(businessSummary.insuranceCostPerJob || 0).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Cost per Job</strong></td>
+                        <td class="expense-total">$${(businessSummary.totalCostPerJob || 0).toFixed(2)}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Labor Efficiency -->
+        <div class="summary-table-container">
+            <h4 style="color: #667eea; margin-bottom: 15px; font-size: 1.2em;">Labor Efficiency</h4>
+            <table class="business-summary-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Average Hourly Wage</strong></td>
+                        <td class="expense-amount">$${(businessSummary.averageHourlyWage || 0).toFixed(2)}/hr</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Labor Cost Ratio</strong></td>
+                        <td>${(businessSummary.laborCostRatio || 0).toFixed(2)}%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Productivity Index</strong></td>
+                        <td class="${businessSummary.productivityIndex >= 1 ? 'profit-positive' : 'profit-negative'}">${(businessSummary.productivityIndex || 0).toFixed(2)}</td>
                     </tr>
                 </tbody>
             </table>
@@ -1153,7 +1301,24 @@ function clearResults() {
         totalRevenue: 0,
         totalPayroll: 0,
         marketingSpend: 0,
-        insuranceSpend: 0
+        insuranceSpend: 0,
+        totalTips: 0,
+        jobCount: 0,
+        averageJobValue: 0,
+        averageTipPerJob: 0,
+        totalLaborHours: 0,
+        revenuePerHour: 0,
+        payrollPercentage: 0,
+        averageHoursPerJob: 0,
+        jobsPerEmployee: 0,
+        revenuePerEmployee: 0,
+        payrollCostPerJob: 0,
+        marketingCostPerJob: 0,
+        insuranceCostPerJob: 0,
+        totalCostPerJob: 0,
+        averageHourlyWage: 0,
+        laborCostRatio: 0,
+        productivityIndex: 0
     };
     const resultsSection = document.getElementById('results-section');
     if (resultsSection) {
