@@ -692,15 +692,23 @@ async function processPayrollFile(file) {
             // Continue even if config save fails
         }
         
-        // Get marketing and insurance spend
+        // Get business expenses
         const marketingSpend = parseFloat(document.getElementById('marketing-spend').value);
         const insuranceSpend = parseFloat(document.getElementById('insurance-spend').value);
+        const technologySpend = parseFloat(document.getElementById('technology-spend').value);
+        const officeStaffSpend = parseFloat(document.getElementById('office-staff-spend').value);
+        const vehicleGasSpend = parseFloat(document.getElementById('vehicle-gas-spend').value);
+        const suppliesSpend = parseFloat(document.getElementById('supplies-spend').value);
         
         // Create form data
         const formData = new FormData();
         formData.append('file', file);
         formData.append('marketing_spend', marketingSpend);
         formData.append('insurance_spend', insuranceSpend);
+        formData.append('technology_spend', technologySpend);
+        formData.append('office_staff_spend', officeStaffSpend);
+        formData.append('vehicle_gas_spend', vehicleGasSpend);
+        formData.append('supplies_spend', suppliesSpend);
         
         // Send to backend
         const response = await fetch(`${API_BASE}/payroll/process`, {
