@@ -46,7 +46,7 @@ function parseJob(job, job_amt, tips_amt, employee_cols, employee_levels, level_
     }
     
     if (technicians.size == 0) {
-        throw new Error(`The job has no technicians and only trainees.`);
+        throw new Error(`the job has no technicians assigned (only trainees). At least one technician (L2, L3, or L4) must be assigned to the job. Please check the assigned employees in the other system.`);
     }
     
     let employee_wage = max_pct * job_amt;

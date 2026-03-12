@@ -19,41 +19,96 @@ function getOutputReport(data, employees, levels, config) {
     
     let output = [];
     
-    data.forEach(row => {
-        let tips_amt = parseFloat(String(row[7] || '0').replace('$', '').replace(',', '')) || 0;
-        let job_amt = parseFloat(String(row[6] || '0').replace('$', '').replace(',', '')) || 0;
-        job_amt = job_amt - tips_amt; // Job amount excludes tips
+    data.forEach((row, index) => {
+        const jobNumber = row[0] || `Row ${index + 2}`; // Use row number if job number is missing
         
-        // Parse raw hours from CSV before processing (for accurate totals)
-        let rawHours = parseEmployeeHoursStringRaw(row[9], employee_cols);
-        employee_cols.forEach(emp => {
-            rawEmployeeHours[emp] += rawHours[emp] || 0;
-        });
-        
-        let wages_and_tips = parseJob(
-            row[9], 
-            job_amt, 
-            tips_amt, 
-            employee_cols, 
-            employee_levels, 
-            level_pcts,
-            trainee_wage,
-            margin_of_error,
-            num_decimal_points
-        );
-        
-        output.push({
-            jobNumber: row[0],
-            jobStatus: row[1],
-            manualInput: row[9] == null || row[9] === '' ? "True" : "False",
-            address: row[2],
-            hours: wages_and_tips['hours'],
-            wages: wages_and_tips['wages'],
-            tips: wages_and_tips['tips'],
-            jobAmount: job_amt,
-            tipAmount: tips_amt,
-            completedDate: row[4]
-        });
+        try {
+            // Validate and parse job amount
+            const rawJobAmount = String(row[6] || '0').replace('$', '').replace(',', '');
+            let job_amt = parseFloat(rawJobAmount);
+            if (isNaN(job_amt)) {
+                throw new Error(`Job amount "${row[6]}" is not a valid number. Please check the job amount in the other system.`);
+            }
+            if (job_amt < 0) {
+                throw new Error(`Job amount "${row[6]}" is negative. Please check the job amount in the other system.`);
+            }
+            
+            // Validate and parse tip amount
+            const rawTipAmount = String(row[7] || '0').replace('$', '').replace(',', '');
+            let tips_amt = parseFloat(rawTipAmount);
+            if (isNaN(tips_amt)) {
+                throw new Error(`Tip amount "${row[7]}" is not a valid number. Please check the tip amount in the other system.`);
+            }
+            if (tips_amt < 0) {
+                throw new Error(`Tip amount "${row[7]}" is negative. Please check the tip amount in the other system.`);
+            }
+            
+            job_amt = job_amt - tips_amt; // Job amount excludes tips
+            
+            // Validate that job amount doesn't become negative after subtracting tips
+            if (job_amt < 0) {
+                throw new Error(`Job amount "${row[6]}" is less than tip amount "${row[7]}". The job amount should be greater than or equal to the tip amount. Please check both values in the other system.`);
+            }
+            
+            // Validate employee hours string format if present
+            const employeeHoursStr = row[9];
+            if (employeeHoursStr != null && employeeHoursStr !== '') {
+                // Check if the format is correct (should contain " - " separators)
+                const lines = employeeHoursStr.split(/\r?\n/).filter(line => line.trim());
+                const invalidLines = lines.filter(line => {
+                    const trimmed = line.trim();
+                    return trimmed && !trimmed.includes(' - ');
+                });
+                
+                if (invalidLines.length > 0) {
+                    throw new Error(`Employee hours format is incorrect. Each line should be in the format "Employee Name - Hours". Found invalid lines: ${invalidLines.slice(0, 3).join(', ')}. Please check the employee hours data in the other system.`);
+                }
+                
+                // Check if employee names in hours string match known employees
+                const parsedHours = parseEmployeeHoursStringRaw(employeeHoursStr, employee_cols);
+                const employeesInHours = Object.keys(parsedHours).filter(emp => parsedHours[emp] > 0);
+                const unknownEmployees = employeesInHours.filter(emp => !employee_cols.includes(emp));
+                
+                if (unknownEmployees.length > 0) {
+                    throw new Error(`Unknown employee(s) found in hours data: ${unknownEmployees.join(', ')}. Please ensure all employee names match exactly with the employees list, or check the employee names in the other system.`);
+                }
+            }
+            
+            // Parse raw hours from CSV before processing (for accurate totals)
+            let rawHours = parseEmployeeHoursStringRaw(row[9], employee_cols);
+            employee_cols.forEach(emp => {
+                rawEmployeeHours[emp] += rawHours[emp] || 0;
+            });
+            
+            let wages_and_tips = parseJob(
+                row[9], 
+                job_amt, 
+                tips_amt, 
+                employee_cols, 
+                employee_levels, 
+                level_pcts,
+                trainee_wage,
+                margin_of_error,
+                num_decimal_points
+            );
+            
+            output.push({
+                jobNumber: row[0],
+                jobStatus: row[1],
+                manualInput: row[9] == null || row[9] === '' ? "True" : "False",
+                address: row[2],
+                hours: wages_and_tips['hours'],
+                wages: wages_and_tips['wages'],
+                tips: wages_and_tips['tips'],
+                jobAmount: job_amt,
+                tipAmount: tips_amt,
+                completedDate: row[4]
+            });
+        } catch (error) {
+            // Wrap error with job number context
+            const errorMessage = `The data entered in Job #${jobNumber} is not correct because ${error.message}`;
+            throw new Error(errorMessage);
+        }
     });
     
     return { results: output, rawEmployeeHours };
