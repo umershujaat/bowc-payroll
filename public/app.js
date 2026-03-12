@@ -911,7 +911,6 @@ function displayResults(data) {
     
     // Display summary
     displayEmployeeSummary();
-    displayBusinessSummary();
     
     // Scroll to results
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -979,101 +978,6 @@ function displayEmployeeSummary() {
     section.appendChild(summaryDiv);
 }
 
-// Display business summary
-function displayBusinessSummary() {
-    const section = document.getElementById('results-section');
-    if (!section) return;
-    
-    // Remove existing business summary if any
-    const existingSummary = document.getElementById('business-summary');
-    if (existingSummary) {
-        existingSummary.remove();
-    }
-    
-    const summaryDiv = document.createElement('div');
-    summaryDiv.id = 'business-summary';
-    summaryDiv.className = 'business-summary';
-    
-    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.technologySpend || 0) + (businessSummary.officeStaffSpend || 0) + (businessSummary.vehicleGasSpend || 0) + (businessSummary.suppliesSpend || 0) + (businessSummary.adjustmentExpense || 0) + (businessSummary.stripeCost || 0);
-    const netProfit = businessSummary.totalRevenue - totalExpenses;
-    const profitMargin = businessSummary.totalRevenue > 0 
-        ? ((netProfit / businessSummary.totalRevenue) * 100).toFixed(2)
-        : 0;
-    
-    summaryDiv.innerHTML = `
-        <h3>Business Summary</h3>
-        <div class="summary-table-container">
-            <table id="business-summary-table">
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Total Job Revenue</strong></td>
-                        <td class="revenue-amount">$${businessSummary.totalRevenue.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Total Payroll Cost</strong></td>
-                        <td class="expense-amount">$${businessSummary.totalPayroll.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Payroll Taxes (7.65%)</strong></td>
-                        <td class="expense-amount">$${(businessSummary.payrollTaxes || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Marketing Spend</strong></td>
-                        <td class="expense-amount">$${(businessSummary.marketingSpend || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Insurance Spend</strong></td>
-                        <td class="expense-amount">$${(businessSummary.insuranceSpend || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Technology Expense</strong></td>
-                        <td class="expense-amount">$${(businessSummary.technologySpend || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Office Staff Avg Salary</strong></td>
-                        <td class="expense-amount">$${(businessSummary.officeStaffSpend || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Vehicle Gas Expense</strong></td>
-                        <td class="expense-amount">$${(businessSummary.vehicleGasSpend || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Cost of Supplies</strong></td>
-                        <td class="expense-amount">$${(businessSummary.suppliesSpend || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Adjustment Expense</strong></td>
-                        <td class="${(businessSummary.adjustmentExpense || 0) >= 0 ? 'expense-amount' : 'revenue-amount'}">$${(businessSummary.adjustmentExpense || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Stripe Cost (1.5%)</strong></td>
-                        <td class="expense-amount">$${(businessSummary.stripeCost || 0).toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Total Expenses</strong></td>
-                        <td class="expense-total">$${totalExpenses.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Net Profit</strong></td>
-                        <td class="${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}">$${netProfit.toFixed(2)}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Profit Margin</strong></td>
-                        <td class="${netProfit >= 0 ? 'profit-positive' : 'profit-negative'}">${profitMargin}%</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    section.appendChild(summaryDiv);
-}
 
 // Save payroll to database
 async function savePayroll() {
@@ -1213,30 +1117,6 @@ function downloadResults() {
             `$${total.avgHourlyRate.toFixed(2)}/hr`
         ]);
     });
-    
-    // Add business summary
-    csvData.push([]);
-    csvData.push(['Business Summary']);
-    csvData.push(['Metric', 'Amount']);
-    csvData.push(['Total Job Revenue', `$${businessSummary.totalRevenue.toFixed(2)}`]);
-    csvData.push(['Total Payroll Cost', `$${businessSummary.totalPayroll.toFixed(2)}`]);
-    csvData.push(['Payroll Taxes (7.65%)', `$${(businessSummary.payrollTaxes || 0).toFixed(2)}`]);
-    csvData.push(['Marketing Spend', `$${(businessSummary.marketingSpend || 0).toFixed(2)}`]);
-    csvData.push(['Insurance Spend', `$${(businessSummary.insuranceSpend || 0).toFixed(2)}`]);
-    csvData.push(['Technology Expense', `$${(businessSummary.technologySpend || 0).toFixed(2)}`]);
-    csvData.push(['Office Staff Avg Salary', `$${(businessSummary.officeStaffSpend || 0).toFixed(2)}`]);
-    csvData.push(['Vehicle Gas Expense', `$${(businessSummary.vehicleGasSpend || 0).toFixed(2)}`]);
-    csvData.push(['Cost of Supplies', `$${(businessSummary.suppliesSpend || 0).toFixed(2)}`]);
-    csvData.push(['Adjustment Expense', `$${(businessSummary.adjustmentExpense || 0).toFixed(2)}`]);
-    csvData.push(['Stripe Cost (1.5%)', `$${(businessSummary.stripeCost || 0).toFixed(2)}`]);
-    const totalExpenses = businessSummary.totalPayroll + (businessSummary.payrollTaxes || 0) + businessSummary.marketingSpend + businessSummary.insuranceSpend + (businessSummary.technologySpend || 0) + (businessSummary.officeStaffSpend || 0) + (businessSummary.vehicleGasSpend || 0) + (businessSummary.suppliesSpend || 0) + (businessSummary.adjustmentExpense || 0) + (businessSummary.stripeCost || 0);
-    csvData.push(['Total Expenses', `$${totalExpenses.toFixed(2)}`]);
-    const netProfit = businessSummary.totalRevenue - totalExpenses;
-    csvData.push(['Net Profit', `$${netProfit.toFixed(2)}`]);
-    const profitMargin = businessSummary.totalRevenue > 0 
-        ? ((netProfit / businessSummary.totalRevenue) * 100).toFixed(2)
-        : 0;
-    csvData.push(['Profit Margin', `${profitMargin}%`]);
     
     // Convert to CSV
     const csv = csvData.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
@@ -1450,40 +1330,6 @@ function displayPayrollDetail(data) {
         </div>
         
         <div class="detail-section">
-            <h4>Business Summary</h4>
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <span class="summary-label">Total Revenue</span>
-                    <span class="summary-value revenue-amount">$${parseFloat(run.total_revenue || 0).toFixed(2)}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Total Payroll</span>
-                    <span class="summary-value expense-amount">$${parseFloat(run.total_payroll || 0).toFixed(2)}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Marketing Spend</span>
-                    <span class="summary-value expense-amount">$${parseFloat(run.marketing_spend || 0).toFixed(2)}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Insurance Spend</span>
-                    <span class="summary-value expense-amount">$${parseFloat(run.insurance_spend || 0).toFixed(2)}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Total Expenses</span>
-                    <span class="summary-value expense-total">$${parseFloat(run.total_expenses || 0).toFixed(2)}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Net Profit</span>
-                    <span class="summary-value ${profitClass}">$${parseFloat(run.net_profit || 0).toFixed(2)}</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Profit Margin</span>
-                    <span class="summary-value ${profitClass}">${parseFloat(run.profit_margin || 0).toFixed(2)}%</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="detail-section">
             <h4>Employee Summary</h4>
             <div class="table-container">
                 <table>
@@ -1578,18 +1424,6 @@ function exportPayrollToCSV(data) {
     csvData.push(['PAYROLL EXPORT']);
     csvData.push(['Period Name', run.period_name || 'N/A']);
     csvData.push(['Date Range', `${run.period_start_date || ''} - ${run.period_end_date || ''}`]);
-    csvData.push([]);
-    
-    // Business Summary
-    csvData.push(['BUSINESS SUMMARY']);
-    csvData.push(['Metric', 'Amount']);
-    csvData.push(['Total Revenue', `$${parseFloat(run.total_revenue || 0).toFixed(2)}`]);
-    csvData.push(['Total Payroll', `$${parseFloat(run.total_payroll || 0).toFixed(2)}`]);
-    csvData.push(['Marketing Spend', `$${parseFloat(run.marketing_spend || 0).toFixed(2)}`]);
-    csvData.push(['Insurance Spend', `$${parseFloat(run.insurance_spend || 0).toFixed(2)}`]);
-    csvData.push(['Total Expenses', `$${parseFloat(run.total_expenses || 0).toFixed(2)}`]);
-    csvData.push(['Net Profit', `$${parseFloat(run.net_profit || 0).toFixed(2)}`]);
-    csvData.push(['Profit Margin', `${parseFloat(run.profit_margin || 0).toFixed(2)}%`]);
     csvData.push([]);
     
     // Employee Summary
